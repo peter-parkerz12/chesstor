@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StatsRouteImport } from './routes/stats'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as OpeningsRouteImport } from './routes/openings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayLocalRouteImport } from './routes/play.local'
@@ -18,6 +19,11 @@ import { Route as PlayAiRouteImport } from './routes/play.ai'
 const StatsRoute = StatsRouteImport.update({
   id: '/stats',
   path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpeningsRoute = OpeningsRouteImport.update({
@@ -44,6 +50,7 @@ const PlayAiRoute = PlayAiRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/openings': typeof OpeningsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats': typeof StatsRoute
   '/play/ai': typeof PlayAiRoute
   '/play/local': typeof PlayLocalRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/openings': typeof OpeningsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats': typeof StatsRoute
   '/play/ai': typeof PlayAiRoute
   '/play/local': typeof PlayLocalRoute
@@ -59,21 +67,36 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/openings': typeof OpeningsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats': typeof StatsRoute
   '/play/ai': typeof PlayAiRoute
   '/play/local': typeof PlayLocalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/openings' | '/stats' | '/play/ai' | '/play/local'
+  fullPaths:
+    | '/'
+    | '/openings'
+    | '/sitemap.xml'
+    | '/stats'
+    | '/play/ai'
+    | '/play/local'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/openings' | '/stats' | '/play/ai' | '/play/local'
-  id: '__root__' | '/' | '/openings' | '/stats' | '/play/ai' | '/play/local'
+  to: '/' | '/openings' | '/sitemap.xml' | '/stats' | '/play/ai' | '/play/local'
+  id:
+    | '__root__'
+    | '/'
+    | '/openings'
+    | '/sitemap.xml'
+    | '/stats'
+    | '/play/ai'
+    | '/play/local'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OpeningsRoute: typeof OpeningsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatsRoute: typeof StatsRoute
   PlayAiRoute: typeof PlayAiRoute
   PlayLocalRoute: typeof PlayLocalRoute
@@ -86,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/stats'
       fullPath: '/stats'
       preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/openings': {
@@ -122,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OpeningsRoute: OpeningsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatsRoute: StatsRoute,
   PlayAiRoute: PlayAiRoute,
   PlayLocalRoute: PlayLocalRoute,
