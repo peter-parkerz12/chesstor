@@ -51,7 +51,7 @@ function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.1 + i * 0.06 }}
           >
-            <Link to={m.to} className="group block">
+            <Link to={m.to as never} className="group block">
               <ClayCard className={`relative h-full overflow-hidden transition-transform group-hover:-translate-y-1 ${m.accent ? "glow-gold" : ""}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${m.accent ? "bg-gold/15 text-gold" : "bg-white/5 text-foreground"}`}>
