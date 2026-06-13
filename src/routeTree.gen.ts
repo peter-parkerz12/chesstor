@@ -9,38 +9,122 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StatsRouteImport } from './routes/stats'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as OpeningsRouteImport } from './routes/openings'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlayLocalRouteImport } from './routes/play.local'
+import { Route as PlayAiRouteImport } from './routes/play.ai'
 
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpeningsRoute = OpeningsRouteImport.update({
+  id: '/openings',
+  path: '/openings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayLocalRoute = PlayLocalRouteImport.update({
+  id: '/play/local',
+  path: '/play/local',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayAiRoute = PlayAiRouteImport.update({
+  id: '/play/ai',
+  path: '/play/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/openings': typeof OpeningsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats': typeof StatsRoute
+  '/play/ai': typeof PlayAiRoute
+  '/play/local': typeof PlayLocalRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/openings': typeof OpeningsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats': typeof StatsRoute
+  '/play/ai': typeof PlayAiRoute
+  '/play/local': typeof PlayLocalRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/openings': typeof OpeningsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats': typeof StatsRoute
+  '/play/ai': typeof PlayAiRoute
+  '/play/local': typeof PlayLocalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/openings'
+    | '/sitemap.xml'
+    | '/stats'
+    | '/play/ai'
+    | '/play/local'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/openings' | '/sitemap.xml' | '/stats' | '/play/ai' | '/play/local'
+  id:
+    | '__root__'
+    | '/'
+    | '/openings'
+    | '/sitemap.xml'
+    | '/stats'
+    | '/play/ai'
+    | '/play/local'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OpeningsRoute: typeof OpeningsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StatsRoute: typeof StatsRoute
+  PlayAiRoute: typeof PlayAiRoute
+  PlayLocalRoute: typeof PlayLocalRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/openings': {
+      id: '/openings'
+      path: '/openings'
+      fullPath: '/openings'
+      preLoaderRoute: typeof OpeningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +132,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/play/local': {
+      id: '/play/local'
+      path: '/play/local'
+      fullPath: '/play/local'
+      preLoaderRoute: typeof PlayLocalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/ai': {
+      id: '/play/ai'
+      path: '/play/ai'
+      fullPath: '/play/ai'
+      preLoaderRoute: typeof PlayAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OpeningsRoute: OpeningsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StatsRoute: StatsRoute,
+  PlayAiRoute: PlayAiRoute,
+  PlayLocalRoute: PlayLocalRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
