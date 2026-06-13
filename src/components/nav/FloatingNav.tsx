@@ -2,12 +2,13 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Swords, BookOpen, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const ITEMS = [
+type NavItem = { to: string; label: string; icon: typeof Home; exact?: boolean };
+const ITEMS: NavItem[] = [
   { to: "/", label: "Home", icon: Home, exact: true },
   { to: "/play/ai", label: "Play", icon: Swords },
   { to: "/openings", label: "Learn", icon: BookOpen },
   { to: "/stats", label: "Stats", icon: BarChart3 },
-] as const;
+];
 
 export function FloatingNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
