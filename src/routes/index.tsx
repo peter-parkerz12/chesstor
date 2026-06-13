@@ -13,12 +13,13 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const MODES = [
+type Mode = { to: string; title: string; desc: string; icon: typeof Swords; accent?: boolean };
+const MODES: Mode[] = [
   { to: "/play/ai", title: "Play vs AI", desc: "Stockfish opponent with 6 difficulty tiers and instant coaching.", icon: Swords, accent: true },
   { to: "/play/local", title: "Pass & Play", desc: "Two players, one device. Perfect for the dinner table.", icon: Users },
   { to: "/openings", title: "Opening Trainer", desc: "Drill 6 classical openings move by move with feedback.", icon: BookOpen },
   { to: "/stats", title: "Progress", desc: "Track your accuracy, mistakes, and openings mastered.", icon: BarChart3 },
-] as const;
+];
 
 function Home() {
   return (
