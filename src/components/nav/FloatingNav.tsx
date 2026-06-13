@@ -27,7 +27,7 @@ export function FloatingNav() {
           return (
             <Link
               key={item.to}
-              to={item.to}
+              to={item.to as never}
               className="relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {active && (
