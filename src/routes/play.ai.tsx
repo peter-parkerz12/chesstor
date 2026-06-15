@@ -43,6 +43,7 @@ function PlayAI() {
   const [side, setSide] = useState<SideChoice>("white");
   const [difficulty, setDifficulty] = useState<DifficultyId>("easy");
   const [started, setStarted] = useState(false);
+  useGameMode(started);
 
   const [report, setReport] = useState<CoachReport | null>(null);
   const [coachLoading, setCoachLoading] = useState(false);
