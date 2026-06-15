@@ -10,6 +10,7 @@ import { ClayCard, GlassPanel } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
 import { OPENINGS, findOpening, type Opening } from "@/lib/openings/database";
 import { recordOpeningAttempt, listOpeningProgress, type OpeningProgress } from "@/lib/db/idb";
+import { useGameMode } from "@/components/nav/island-context";
 
 export const Route = createFileRoute("/openings")({
   head: () => ({
@@ -79,6 +80,7 @@ function OpeningsRoute() {
 }
 
 function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => void }) {
+  useGameMode(true);
   const [chess] = useState(() => new Chess());
   const [fen, setFen] = useState(chess.fen());
   const [moveIdx, setMoveIdx] = useState(0);
