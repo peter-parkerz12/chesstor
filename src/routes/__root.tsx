@@ -126,9 +126,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="relative min-h-dvh">
-        <header className="absolute right-4 top-4 z-30 flex items-center gap-2">
-          <InstallButton />
-        </header>
+        <div className="pointer-events-none fixed right-3 top-3 z-30 sm:right-5 sm:top-5">
+          <div className="pointer-events-auto">
+            <InstallButton />
+          </div>
+        </div>
         <main className="relative z-10">
           {/* Required: nested routes render here. */}
           <Outlet />
