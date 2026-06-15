@@ -11,7 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { FloatingNav } from "@/components/nav/FloatingNav";
+import { DynamicIsland } from "@/components/nav/DynamicIsland";
+import { IslandProvider } from "@/components/nav/island-context";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import { registerPWA } from "@/lib/pwa-register";
 
@@ -125,18 +126,20 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="relative min-h-dvh">
-        <div className="pointer-events-none fixed right-3 top-3 z-30 sm:right-5 sm:top-5">
-          <div className="pointer-events-auto">
-            <InstallButton />
+      <IslandProvider>
+        <div className="relative min-h-dvh">
+          <div className="pointer-events-none fixed right-3 top-3 z-30 sm:right-5 sm:top-5">
+            <div className="pointer-events-auto">
+              <InstallButton />
+            </div>
           </div>
+          <main className="relative z-10">
+            {/* Required: nested routes render here. */}
+            <Outlet />
+          </main>
+          <DynamicIsland />
         </div>
-        <main className="relative z-10">
-          {/* Required: nested routes render here. */}
-          <Outlet />
-        </main>
-        <FloatingNav />
-      </div>
+      </IslandProvider>
     </QueryClientProvider>
   );
 }
