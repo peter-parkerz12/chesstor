@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { ArrowLeft, RotateCcw } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { Board } from "@/components/chess/Board";
-import { FeedbackPanel } from "@/components/chess/FeedbackPanel";
 import { GameLayout } from "@/components/chess/GameLayout";
 import { ResultModal } from "@/components/chess/ResultModal";
+import { ClayCard, GlassPanel } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
-import { analyzeMove, type CoachReport } from "@/lib/coach/feedback";
+import { useGameMode } from "@/components/nav/island-context";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
 import { saveGame } from "@/lib/db/idb";
 
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/play/local")({
   head: () => ({
     meta: [
       { title: "Pass & Play — ChessCoach" },
-      { name: "description", content: "Two players, one device. Local chess with instant move coaching." },
+      { name: "description", content: "Two players, one device. Pure over-the-board chess — no engine, no hints." },
     ],
   }),
   ssr: false,
@@ -24,28 +25,25 @@ export const Route = createFileRoute("/play/local")({
 });
 
 function PassAndPlay() {
+  useGameMode(true);
+
   const [chess] = useState(() => new Chess());
   const [fen, setFen] = useState(chess.fen());
-  const [report, setReport] = useState<CoachReport | null>(null);
-  const [loading, setLoading] = useState(false);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
-  const [arrows, setArrows] = useState<{ startSquare: string; endSquare: string; color: string }[]>([]);
   const [resultOpen, setResultOpen] = useState(false);
-  const cplHistory = useRef<number[]>([]);
+  const [, force] = useState(0);
+  const moveCount = useRef(0);
 
   const reset = useCallback(() => {
     chess.reset();
     setFen(chess.fen());
-    setReport(null);
     setLastMove(null);
-    setArrows([]);
     setResultOpen(false);
-    cplHistory.current = [];
+    moveCount.current = 0;
+    force((n) => n + 1);
   }, [chess]);
 
   const onMove = useCallback((from: string, to: string) => {
-    const fenBefore = chess.fen();
-    const turn = chess.turn();
     let mv;
     try {
       mv = chess.move({ from, to, promotion: "q" });
@@ -53,27 +51,13 @@ function PassAndPlay() {
     if (!mv) return false;
     setFen(chess.fen());
     setLastMove({ from: mv.from, to: mv.to });
-    setArrows([]);
-    setLoading(true);
-    setReport(null);
-    const history = chess.history({ verbose: true }).map((h) => ({ from: h.from, to: h.to, san: h.san, piece: h.piece }));
-    analyzeMove({ fenBefore, fenAfter: chess.fen(), playedSAN: mv.san, history, side: turn })
-      .then((r) => {
-        setReport(r);
-        cplHistory.current.push(r.cpl);
-        if (r.bestMove && r.cpl > 30) {
-          setArrows([{ startSquare: r.bestMove.slice(0, 2), endSquare: r.bestMove.slice(2, 4), color: "#E2B96F" }]);
-        }
-      })
-      .catch(() => null)
-      .finally(() => setLoading(false));
+    moveCount.current += 1;
+    force((n) => n + 1);
+
     if (chess.isGameOver()) {
       const result = chess.isCheckmate()
         ? (chess.turn() === "w" ? "0-1" : "1-0")
         : chess.isDraw() ? "1/2-1/2" : "*";
-      const cplAvg = cplHistory.current.length
-        ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length)
-        : 0;
       saveGame({
         id: crypto.randomUUID(),
         mode: "local",
@@ -81,7 +65,7 @@ function PassAndPlay() {
         result: result === "1-0" || result === "0-1" ? "win" : result === "1/2-1/2" ? "draw" : "unfinished",
         pgn: buildPGN({ white: "Player 1", black: "Player 2", result: result as "1-0" | "0-1" | "1/2-1/2" | "*", moves: chess.history() }),
         moves: chess.history(),
-        cplAvg,
+        cplAvg: 0,
         cplByPhase: { opening: 0, middlegame: 0, endgame: 0 },
         mistakeBuckets: { development: 0, tactics: 0, kingSafety: 0, endgame: 0 },
         date: Date.now(),
@@ -92,10 +76,22 @@ function PassAndPlay() {
   }, [chess]);
 
   const orientation = chess.turn() === "w" ? "white" : "black";
-  const turnLabel = chess.turn() === "w" ? "White to move" : "Black to move";
+  const isWhite = chess.turn() === "w";
+  const turnLabel = isWhite ? "White to move" : "Black to move";
   const resultText = chess.isCheckmate()
     ? `${chess.turn() === "w" ? "Black" : "White"} wins`
     : chess.isDraw() ? "Draw" : "";
+
+  // Move history as pairs.
+  const moves = useMemo(() => {
+    const h = chess.history();
+    const pairs: Array<{ n: number; white?: string; black?: string }> = [];
+    for (let i = 0; i < h.length; i += 2) {
+      pairs.push({ n: i / 2 + 1, white: h[i], black: h[i + 1] });
+    }
+    return pairs;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fen, chess]);
 
   return (
     <>
@@ -105,24 +101,59 @@ function PassAndPlay() {
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Home
             </Link>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-muted-foreground">{turnLabel}</span>
-              <Button size="sm" variant="ghost" onClick={reset}>
-                <RotateCcw className="h-4 w-4" /> Reset
-              </Button>
-            </div>
+            <Button size="sm" variant="ghost" onClick={reset}>
+              <RotateCcw className="h-4 w-4" /> Reset
+            </Button>
           </div>
         }
         board={
-          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} arrows={arrows} />
+          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} />
         }
-        side={<FeedbackPanel report={report} loading={loading} thinking={loading} emptyHint="Pass the device after each move. I'll review every play." />}
+        side={
+          <div className="flex flex-col gap-4">
+            <ClayCard className="!p-5">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Turn</h3>
+              <div className="mt-3 flex items-center gap-3">
+                <motion.span
+                  key={isWhite ? "w" : "b"}
+                  initial={{ scale: 0.85, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                  className={`h-7 w-7 rounded-full ring-2 ring-gold/40 ${
+                    isWhite ? "bg-foreground" : "bg-surface"
+                  }`}
+                  aria-hidden
+                />
+                <p className="text-lg font-semibold">{turnLabel}</p>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Pure over-the-board play. No engine, no hints — just you and your opponent.
+              </p>
+            </ClayCard>
+
+            <GlassPanel>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Moves</h4>
+              {moves.length === 0 ? (
+                <p className="mt-3 text-sm text-muted-foreground">No moves yet.</p>
+              ) : (
+                <ol className="mt-3 max-h-64 space-y-1 overflow-y-auto pr-1 text-sm no-scrollbar">
+                  {moves.map((p) => (
+                    <li key={p.n} className="grid grid-cols-[2rem_1fr_1fr] gap-2 font-mono">
+                      <span className="text-muted-foreground">{p.n}.</span>
+                      <span>{p.white ?? ""}</span>
+                      <span className="text-muted-foreground">{p.black ?? ""}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </GlassPanel>
+          </div>
+        }
       />
       <ResultModal
         open={resultOpen}
         title={resultText || "Game over"}
         subtitle="Pass & Play"
-        cplAvg={cplHistory.current.length ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length) : undefined}
         onPlayAgain={reset}
         onExportPGN={() => {
           const pgn = buildPGN({

@@ -22,6 +22,7 @@ import { DIFFICULTY_TIERS, getOpponentEngine, type DifficultyId } from "@/lib/en
 import { analyzeMove, type CoachReport } from "@/lib/coach/feedback";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
 import { saveGame } from "@/lib/db/idb";
+import { useGameMode } from "@/components/nav/island-context";
 
 export const Route = createFileRoute("/play/ai")({
   head: () => ({
