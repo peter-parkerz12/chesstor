@@ -65,7 +65,7 @@ function Stats() {
   const winRate = agg.total ? Math.round((agg.wins / agg.total) * 100) : 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 pt-10 pb-32 lg:px-8 lg:pt-16">
+    <div className="mx-auto w-full max-w-6xl px-5 pt-10 pb-nav lg:px-8 lg:pt-16">
       <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Home
       </Link>

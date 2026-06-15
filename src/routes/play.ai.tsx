@@ -213,7 +213,7 @@ function PlayAI() {
 
   if (!started) {
     return (
-      <div className="mx-auto w-full max-w-md px-5 pt-10 pb-32 lg:pt-16">
+      <div className="mx-auto w-full max-w-md px-5 pt-10 pb-nav lg:pt-16">
         <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Home
         </Link>

@@ -17,7 +17,7 @@ import { registerPWA } from "@/lib/pwa-register";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
@@ -45,7 +45,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           This page didn't load
@@ -126,9 +126,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="relative min-h-dvh">
-        <header className="absolute right-4 top-4 z-30 flex items-center gap-2">
-          <InstallButton />
-        </header>
+        <div className="pointer-events-none fixed right-3 top-3 z-30 sm:right-5 sm:top-5">
+          <div className="pointer-events-auto">
+            <InstallButton />
+          </div>
+        </div>
         <main className="relative z-10">
           {/* Required: nested routes render here. */}
           <Outlet />
