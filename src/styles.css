@@ -100,6 +100,12 @@
     radial-gradient(ellipse at top left, oklch(0.3 0.08 280 / 0.35), transparent 55%),
     radial-gradient(ellipse at bottom right, oklch(0.32 0.1 30 / 0.18), transparent 60%),
     linear-gradient(180deg, oklch(0.14 0.025 270), oklch(0.18 0.035 275));
+
+  /* Floating nav clearance — used by `pb-nav` utility. */
+  --nav-height: calc(env(safe-area-inset-bottom, 0px) + 96px);
+
+  /* Motion tokens — keep the whole app on one curve. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark { color-scheme: dark; }
@@ -115,9 +121,24 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.022em; }
+  input, select, textarea { font-size: max(16px, 1rem); }
+  :where(button, a, [role="button"], input, select, textarea):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 14px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
+
+@utility pb-nav { padding-bottom: var(--nav-height); }
 
 /* ============================================================
    Reusable surface utilities
