@@ -220,3 +220,8 @@
     var(--shadow-clay),
     inset 0 1px 0 0 oklch(1 0 0 / 0.06);
 }
+/* Apply piece-set filter only to pieces, not the squares. */
+.board-frame[data-piece-set] svg,
+.board-frame[data-piece-set] img {
+  filter: var(--piece-filter, none);
+}

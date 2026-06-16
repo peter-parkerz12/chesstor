@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Trophy, Target, Brain, Swords } from "lucide-react";
+import { ArrowLeft, Trophy, Target, Brain, Swords, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { ClayCard, GlassPanel } from "@/components/ui/surfaces";
@@ -89,6 +89,13 @@ function Stats() {
             />
           </div>
 
+          <SmartRecommendation
+            mistake={agg.mostCommonMistake}
+            openingScore={agg.openingScore}
+            middlegameScore={agg.middlegameScore}
+            endgameScore={agg.endgameScore}
+          />
+
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
             <PhaseScore label="Opening" value={agg.openingScore} />
             <PhaseScore label="Middlegame" value={agg.middlegameScore} />
@@ -174,4 +181,71 @@ function prettyBucket(b: string): string {
     case "endgame": return "Endgame";
     default: return b;
   }
+}
+
+function SmartRecommendation({
+  mistake, openingScore, middlegameScore, endgameScore,
+}: {
+  mistake: string | null;
+  openingScore: number | null;
+  middlegameScore: number | null;
+  endgameScore: number | null;
+}) {
+  const scores = [
+    { label: "opening", value: openingScore },
+    { label: "middlegame", value: middlegameScore },
+    { label: "endgame", value: endgameScore },
+  ].filter((s): s is { label: string; value: number } => s.value !== null);
+  const weakest = scores.length ? scores.reduce((a, b) => (a.value < b.value ? a : b)) : null;
+
+  let title = "Keep playing to unlock recommendations";
+  let body = "Play a few more games and the coach will suggest where to focus your training.";
+  let to: "/openings" | "/play/ai" = "/play/ai";
+  let cta = "Play a game";
+
+  if (mistake === "development" || (weakest && weakest.label === "opening" && weakest.value < 70)) {
+    title = "Focus: opening principles";
+    body = "Your opening accuracy is the weakest part of your play. Drill the London System or Italian Game to sharpen development and central control.";
+    to = "/openings"; cta = "Train openings";
+  } else if (mistake === "tactics" || (weakest && weakest.label === "middlegame" && weakest.value < 70)) {
+    title = "Focus: piece safety & tactics";
+    body = "You're dropping pieces or missing tactics in the middlegame. Slow down — check every move for threats and undefended pieces.";
+    to = "/play/ai"; cta = "Practice vs AI";
+  } else if (mistake === "kingSafety") {
+    title = "Focus: king safety";
+    body = "Castle earlier and watch for threats around your king. Avoid weakening pawn moves in front of your castled king.";
+    to = "/openings"; cta = "Drill safer openings";
+  } else if (mistake === "endgame" || (weakest && weakest.label === "endgame" && weakest.value < 70)) {
+    title = "Focus: endgame technique";
+    body = "Your endgame accuracy is the weakest. Activate your king, push passed pawns, and convert advantages into queens.";
+    to = "/play/ai"; cta = "Play more endgames";
+  } else if (weakest) {
+    title = "You're playing well — keep it up";
+    body = `Your strongest area is ${scores.reduce((a, b) => (a.value > b.value ? a : b)).label}. Push the difficulty up for a tougher challenge.`;
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }} className="mt-6">
+      <ClayCard className="ring-1 ring-gold/20 glow-gold">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold/15 text-gold">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Coach recommends</p>
+              <h3 className="mt-1 text-lg font-bold">{title}</h3>
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{body}</p>
+            </div>
+          </div>
+          <Link
+            to={to}
+            className="inline-flex shrink-0 items-center gap-2 self-start rounded-2xl bg-gold px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
+          >
+            {cta} <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </ClayCard>
+    </motion.div>
+  );
 }

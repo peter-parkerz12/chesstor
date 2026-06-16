@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { motion } from "framer-motion";
-import { ArrowLeft, RotateCcw } from "lucide-react";
+import { ArrowLeft, RotateCcw, Lightbulb, LightbulbOff } from "lucide-react";
 
 import { Board } from "@/components/chess/Board";
 import { EvalBar } from "@/components/chess/EvalBar";
@@ -23,6 +23,8 @@ import { analyzeMove, type CoachReport } from "@/lib/coach/feedback";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
 import { saveGame } from "@/lib/db/idb";
 import { useGameMode } from "@/components/nav/island-context";
+import { usePreferences } from "@/lib/settings/preferences";
+import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
 
 export const Route = createFileRoute("/play/ai")({
   head: () => ({
@@ -45,6 +47,8 @@ function PlayAI() {
   const [started, setStarted] = useState(false);
   useGameMode(started);
 
+  const [prefs, setPrefs] = usePreferences();
+
   const [report, setReport] = useState<CoachReport | null>(null);
   const [coachLoading, setCoachLoading] = useState(false);
   const [engineThinking, setEngineThinking] = useState(false);
@@ -58,7 +62,6 @@ function PlayAI() {
   const mistakeBuckets = useRef({ development: 0, tactics: 0, kingSafety: 0, endgame: 0 });
 
   const tier = useMemo(() => DIFFICULTY_TIERS.find((t) => t.id === difficulty)!, [difficulty]);
-
   const userColor: "w" | "b" = side === "white" ? "w" : "b";
 
   const reset = useCallback(() => {
@@ -79,16 +82,16 @@ function PlayAI() {
     setStarted(true);
   }, [reset]);
 
-  // Persist game on end.
   const finishGame = useCallback(async () => {
     let result: "win" | "loss" | "draw" | "unfinished" = "unfinished";
     if (chess.isCheckmate()) {
-      // Side to move is checkmated => other side won
       const loser = chess.turn();
       result = loser === userColor ? "loss" : "win";
     } else if (chess.isDraw() || chess.isStalemate() || chess.isThreefoldRepetition() || chess.isInsufficientMaterial()) {
       result = "draw";
     }
+    if (result === "win") playSfx("win");
+    else if (result === "loss") playSfx("loss");
     const cplAvg = cplHistory.current.length
       ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length)
       : 0;
@@ -144,10 +147,9 @@ function PlayAI() {
         if (mv) {
           setFen(chess.fen());
           setLastMove({ from: mv.from, to: mv.to });
+          playMoveSfx(mv);
         }
-      } catch {
-        // ignore
-      } finally {
+      } catch { /* noop */ } finally {
         setEngineThinking(false);
       }
     })();
@@ -172,8 +174,8 @@ function PlayAI() {
       if (!mv) return false;
       setFen(chess.fen());
       setLastMove({ from: mv.from, to: mv.to });
+      playMoveSfx(mv);
       setArrows([]);
-      // Run coach asynchronously.
       setCoachLoading(true);
       setReport(null);
       const history = chess.history({ verbose: true }).map((h) => ({
@@ -198,7 +200,7 @@ function PlayAI() {
               else mistakeBuckets.current.tactics++;
             } else mistakeBuckets.current.endgame++;
           }
-          if (r.bestMove && r.cpl > 30) {
+          if (prefs.aiHints && r.bestMove && r.cpl > 30) {
             setArrows([{
               startSquare: r.bestMove.slice(0, 2),
               endSquare: r.bestMove.slice(2, 4),
@@ -210,7 +212,7 @@ function PlayAI() {
         .finally(() => setCoachLoading(false));
       return true;
     },
-    [chess, started, userColor],
+    [chess, started, userColor, prefs.aiHints],
   );
 
   if (!started) {
@@ -247,7 +249,7 @@ function PlayAI() {
                   {(["white", "black"] as SideChoice[]).map((s) => (
                     <button
                       key={s}
-                      onClick={() => setSide(s)}
+                      onClick={() => { setSide(s); playSfx("click"); }}
                       className={`rounded-2xl border px-4 py-4 text-sm font-semibold capitalize transition-all ${
                         side === s
                           ? "border-gold/60 bg-gold/10 text-gold shadow-[0_0_0_4px_oklch(0.82_0.13_80/0.1)]"
@@ -259,7 +261,32 @@ function PlayAI() {
                   ))}
                 </div>
               </div>
-              <Button onClick={start} className="h-12 w-full rounded-2xl bg-gold text-primary-foreground hover:bg-gold/90">
+
+              <button
+                type="button"
+                onClick={() => { setPrefs({ aiHints: !prefs.aiHints }); playSfx("click"); }}
+                className="flex w-full items-center justify-between rounded-2xl bg-white/3 px-4 py-3.5 text-left ring-1 ring-white/8 transition-colors hover:bg-white/5"
+                aria-pressed={prefs.aiHints}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${prefs.aiHints ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
+                    {prefs.aiHints ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">Real-Time Move Hints</p>
+                    <p className="text-xs text-muted-foreground">{prefs.aiHints ? "On — best moves shown after slips." : "Off — pure play."}</p>
+                  </div>
+                </div>
+                <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${prefs.aiHints ? "bg-gold" : "bg-white/15"}`}>
+                  <motion.span
+                    layout
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow ${prefs.aiHints ? "right-0.5" : "left-0.5"}`}
+                  />
+                </span>
+              </button>
+
+              <Button onClick={() => { start(); playSfx("click"); }} className="h-12 w-full rounded-2xl bg-gold text-primary-foreground hover:bg-gold/90">
                 Start game
               </Button>
             </div>
@@ -282,7 +309,21 @@ function PlayAI() {
               <ArrowLeft className="h-4 w-4" /> Home
             </Link>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="rounded-full bg-white/5 px-3 py-1">
+              <button
+                type="button"
+                onClick={() => { setPrefs({ aiHints: !prefs.aiHints }); playSfx("click"); }}
+                aria-pressed={prefs.aiHints}
+                aria-label="Toggle real-time move hints"
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ring-1 transition-colors ${
+                  prefs.aiHints
+                    ? "bg-gold/15 text-gold ring-gold/30"
+                    : "bg-white/5 text-muted-foreground ring-white/10 hover:text-foreground"
+                }`}
+              >
+                {prefs.aiHints ? <Lightbulb className="h-3.5 w-3.5" /> : <LightbulbOff className="h-3.5 w-3.5" />}
+                Hints {prefs.aiHints ? "on" : "off"}
+              </button>
+              <span className="hidden rounded-full bg-white/5 px-3 py-1 sm:inline">
                 Stockfish · {tier.label}
               </span>
               <Button size="sm" variant="ghost" onClick={() => { setStarted(false); reset(); }}>

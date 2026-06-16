@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useGameMode } from "@/components/nav/island-context";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
 import { saveGame } from "@/lib/db/idb";
+import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
 
 export const Route = createFileRoute("/play/local")({
   head: () => ({
@@ -51,6 +52,7 @@ function PassAndPlay() {
     if (!mv) return false;
     setFen(chess.fen());
     setLastMove({ from: mv.from, to: mv.to });
+    playMoveSfx(mv);
     moveCount.current += 1;
     force((n) => n + 1);
 
@@ -58,6 +60,7 @@ function PassAndPlay() {
       const result = chess.isCheckmate()
         ? (chess.turn() === "w" ? "0-1" : "1-0")
         : chess.isDraw() ? "1/2-1/2" : "*";
+      if (result === "1-0" || result === "0-1") playSfx("win");
       saveGame({
         id: crypto.randomUUID(),
         mode: "local",
@@ -82,7 +85,6 @@ function PassAndPlay() {
     ? `${chess.turn() === "w" ? "Black" : "White"} wins`
     : chess.isDraw() ? "Draw" : "";
 
-  // Move history as pairs.
   const moves = useMemo(() => {
     const h = chess.history();
     const pairs: Array<{ n: number; white?: string; black?: string }> = [];
