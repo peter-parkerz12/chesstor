@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Chessboard } from "react-chessboard";
 import type { Arrow } from "react-chessboard";
 
+import { usePreferences, getBoardTheme, getPieceSet } from "@/lib/settings/preferences";
+
 type Props = {
   fen: string;
   orientation?: "white" | "black";
@@ -20,11 +22,6 @@ const HIGHLIGHT_STYLES: Record<string, React.CSSProperties> = {
   selected: { background: "oklch(0.82 0.13 80 / 0.25)" },
 };
 
-const LAST_MOVE_STYLE: React.CSSProperties = {
-  background: "oklch(0.82 0.13 80 / 0.18)",
-  boxShadow: "inset 0 0 0 2px oklch(0.82 0.13 80 / 0.5)",
-};
-
 export function Board({
   fen,
   orientation = "white",
@@ -37,10 +34,19 @@ export function Board({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  const [prefs] = usePreferences();
+  const theme = getBoardTheme(prefs.boardTheme);
+  const pieceSet = getPieceSet(prefs.pieceSet);
+
+  const lastMoveStyle: React.CSSProperties = {
+    background: "oklch(0.82 0.13 80 / 0.22)",
+    boxShadow: "inset 0 0 0 2px oklch(0.82 0.13 80 / 0.55)",
+  };
+
   const squareStyles: Record<string, React.CSSProperties> = {};
   if (lastMove) {
-    squareStyles[lastMove.from] = LAST_MOVE_STYLE;
-    squareStyles[lastMove.to] = LAST_MOVE_STYLE;
+    squareStyles[lastMove.from] = lastMoveStyle;
+    squareStyles[lastMove.to] = lastMoveStyle;
   }
   for (const [sq, kind] of Object.entries(highlights)) {
     squareStyles[sq] = { ...(squareStyles[sq] ?? {}), ...HIGHLIGHT_STYLES[kind] };
@@ -58,7 +64,7 @@ export function Board({
   }
 
   return (
-    <div className="board-frame">
+    <div className="board-frame" style={{ filter: pieceSet.filter }}>
       <Chessboard
         options={{
           position: fen,
@@ -67,8 +73,8 @@ export function Board({
           showAnimations: true,
           animationDurationInMs: 220,
           arrows,
-          darkSquareStyle: { backgroundColor: "#1A1A2E" },
-          lightSquareStyle: { backgroundColor: "#F0ECE3" },
+          darkSquareStyle: { backgroundColor: theme.dark },
+          lightSquareStyle: { backgroundColor: theme.light },
           dropSquareStyle: { boxShadow: "inset 0 0 0 3px oklch(0.82 0.13 80 / 0.85)" },
           squareStyles,
           boardStyle: {
@@ -76,8 +82,8 @@ export function Board({
             overflow: "hidden",
             boxShadow: "0 18px 50px -25px rgba(0,0,0,0.7)",
           },
-          darkSquareNotationStyle: { color: "oklch(0.95 0.02 80 / 0.55)", fontWeight: 600 },
-          lightSquareNotationStyle: { color: "oklch(0.18 0.03 270 / 0.7)", fontWeight: 600 },
+          darkSquareNotationStyle: { color: theme.darkText, opacity: 0.6, fontWeight: 600 },
+          lightSquareNotationStyle: { color: theme.lightText, opacity: 0.7, fontWeight: 600 },
           onPieceDrop: ({ sourceSquare, targetSquare }) => {
             if (!targetSquare || !onMove) return false;
             return onMove(sourceSquare, targetSquare);
