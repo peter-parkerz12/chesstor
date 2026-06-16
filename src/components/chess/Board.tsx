@@ -64,7 +64,7 @@ export function Board({
   }
 
   return (
-    <div className="board-frame" style={{ filter: pieceSet.filter }}>
+    <div className="board-frame" data-piece-set={pieceSet.id} style={{ ["--piece-filter" as never]: pieceSet.filter }}>
       <Chessboard
         options={{
           position: fen,
