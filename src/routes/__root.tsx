@@ -15,6 +15,7 @@ import { DynamicIsland } from "@/components/nav/DynamicIsland";
 import { IslandProvider } from "@/components/nav/island-context";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import { registerPWA } from "@/lib/pwa-register";
+import { applyTheme, getPreferences } from "@/lib/settings/preferences";
 
 function NotFoundComponent() {
   return (
@@ -81,18 +82,38 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#1a1a2e" },
+      { name: "theme-color", content: "#090A0B" },
       { title: "Chesstor — Learn chess with instant feedback" },
-      { name: "description", content: "Premium offline-first PWA to learn chess. Play vs Stockfish, get instant move feedback, and master openings — all in your browser." },
+      {
+        name: "description",
+        content:
+          "Premium offline-first PWA to learn chess. Play vs Stockfish, get instant move feedback, and master openings — all in your browser.",
+      },
       { name: "author", content: "ChessCoach" },
       { property: "og:title", content: "Chesstor — Learn chess with instant feedback" },
-      { property: "og:description", content: "Premium offline-first PWA to learn chess. Play vs Stockfish, get instant move feedback, and master openings — all in your browser." },
+      {
+        property: "og:description",
+        content:
+          "Premium offline-first PWA to learn chess. Play vs Stockfish, get instant move feedback, and master openings — all in your browser.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Chesstor — Learn chess with instant feedback" },
-      { name: "twitter:description", content: "Premium offline-first PWA to learn chess. Play vs Stockfish, get instant move feedback, and master openings — all in your browser." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6a8c52a6-8a72-4bf9-aa82-e5115dc9b27c/id-preview-6a7cd5d3--24a38098-4138-4ecb-90d6-d4339a664c69.lovable.app-1781501168529.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6a8c52a6-8a72-4bf9-aa82-e5115dc9b27c/id-preview-6a7cd5d3--24a38098-4138-4ecb-90d6-d4339a664c69.lovable.app-1781501168529.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Premium offline-first PWA to learn chess. Play vs Stockfish, get instant move feedback, and master openings — all in your browser.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6a8c52a6-8a72-4bf9-aa82-e5115dc9b27c/id-preview-6a7cd5d3--24a38098-4138-4ecb-90d6-d4339a664c69.lovable.app-1781501168529.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6a8c52a6-8a72-4bf9-aa82-e5115dc9b27c/id-preview-6a7cd5d3--24a38098-4138-4ecb-90d6-d4339a664c69.lovable.app-1781501168529.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -113,7 +134,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `;(function(){try{var raw=localStorage.getItem('chesscoach:prefs:v1');var theme='dark';if(raw){var parsed=JSON.parse(raw);if(parsed && parsed.theme){theme=parsed.theme;}else{theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}}else{theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.classList.add(theme);document.documentElement.classList.remove(theme==='dark'?'light':'dark');}catch(e){}})();`,
+            __html: `;(function(){try{var raw=localStorage.getItem('chesscoach:prefs:v1');var parsed=raw?JSON.parse(raw):null;var theme=parsed&&(parsed.theme==='light'||parsed.theme==='dark')?parsed.theme:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var root=document.documentElement;root.classList.add(theme);root.classList.remove(theme==='dark'?'light':'dark');root.style.colorScheme=theme;var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',theme==='dark'?'#090A0B':'#F8F6EF');}catch(e){}})();`,
           }}
         />
         <HeadContent />
@@ -130,6 +151,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
+    applyTheme(getPreferences().theme);
     registerPWA();
   }, []);
 

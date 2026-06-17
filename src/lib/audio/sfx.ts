@@ -18,25 +18,37 @@ export type SfxKind =
 
 let ctx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
+let compressor: DynamicsCompressorNode | null = null;
+let activeNodes: Array<AudioScheduledSourceNode> = [];
+let lastPlayedAt = 0;
 
 function ensureCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!ctx) {
     const Ctor: typeof AudioContext | undefined =
       window.AudioContext ??
-      (window as unknown as { webkitAudioContext?: typeof AudioContext })
-        .webkitAudioContext;
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return null;
     ctx = new Ctor();
     masterGain = ctx.createGain();
+    compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -18;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 8;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.12;
     masterGain.gain.value = getPreferences().soundVolume;
-    masterGain.connect(ctx.destination);
+    masterGain.connect(compressor).connect(ctx.destination);
   }
   // Resume if user-gesture suspended it.
   if (ctx.state === "suspended") {
     void ctx.resume().catch(() => null);
   }
-  if (masterGain) masterGain.gain.value = getPreferences().soundVolume;
+  if (masterGain) {
+    const volume = getPreferences().soundVolume;
+    masterGain.gain.cancelScheduledValues(ctx.currentTime);
+    masterGain.gain.setTargetAtTime(volume, ctx.currentTime, 0.01);
+  }
   return ctx;
 }
 
@@ -64,43 +76,41 @@ type SoundPackConfig = {
   noiseFilter?: number;
 };
 
-const SOUND_PACK_CONFIG: Record<
-  import("@/lib/settings/preferences").SoundPackId,
-  SoundPackConfig
-> = {
-  default: {
-    toneType: "triangle",
-    gainScale: 1,
-    durationScale: 1,
-    cutoffScale: 1,
-    noiseGainScale: 1,
-    noiseFilter: 2200,
-  },
-  "classic-tournament": {
-    toneType: "triangle",
-    gainScale: 1.1,
-    durationScale: 1.15,
-    cutoffScale: 0.85,
-    noiseGainScale: 1.2,
-    noiseFilter: 1800,
-  },
-  "modern-digital": {
-    toneType: "square",
-    gainScale: 1.05,
-    durationScale: 0.88,
-    cutoffScale: 1.2,
-    noiseGainScale: 0.65,
-    noiseFilter: 2600,
-  },
-  "premium-luxury": {
-    toneType: "sine",
-    gainScale: 1.2,
-    durationScale: 1.25,
-    cutoffScale: 1.1,
-    noiseGainScale: 0.5,
-    noiseFilter: 2000,
-  },
-};
+const SOUND_PACK_CONFIG: Record<import("@/lib/settings/preferences").SoundPackId, SoundPackConfig> =
+  {
+    default: {
+      toneType: "triangle",
+      gainScale: 1,
+      durationScale: 1,
+      cutoffScale: 1,
+      noiseGainScale: 1,
+      noiseFilter: 2200,
+    },
+    "classic-tournament": {
+      toneType: "triangle",
+      gainScale: 1.1,
+      durationScale: 1.15,
+      cutoffScale: 0.85,
+      noiseGainScale: 1.2,
+      noiseFilter: 1800,
+    },
+    "modern-digital": {
+      toneType: "square",
+      gainScale: 1.05,
+      durationScale: 0.88,
+      cutoffScale: 1.2,
+      noiseGainScale: 0.65,
+      noiseFilter: 2600,
+    },
+    "premium-luxury": {
+      toneType: "sine",
+      gainScale: 1.2,
+      durationScale: 1.25,
+      cutoffScale: 1.1,
+      noiseGainScale: 0.5,
+      noiseFilter: 2000,
+    },
+  };
 
 function playTone(c: AudioContext, dest: AudioNode, t: Tone) {
   const osc = c.createOscillator();
@@ -128,9 +138,16 @@ function playTone(c: AudioContext, dest: AudioNode, t: Tone) {
   osc.connect(filter).connect(gain).connect(dest);
   osc.start(start);
   osc.stop(start + dur + 0.02);
+  trackSource(osc);
 }
 
-function playNoiseBurst(c: AudioContext, dest: AudioNode, durationSec = 0.07, gain = 0.08, filterHz = 2200) {
+function playNoiseBurst(
+  c: AudioContext,
+  dest: AudioNode,
+  durationSec = 0.07,
+  gain = 0.08,
+  filterHz = 2200,
+) {
   const bufferSize = Math.floor(c.sampleRate * durationSec);
   const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
   const data = buffer.getChannelData(0);
@@ -148,6 +165,31 @@ function playNoiseBurst(c: AudioContext, dest: AudioNode, durationSec = 0.07, ga
   filter.Q.value = 0.7;
   src.connect(filter).connect(g).connect(dest);
   src.start(c.currentTime);
+  src.stop(c.currentTime + durationSec + 0.02);
+  trackSource(src);
+}
+
+function trackSource(node: AudioScheduledSourceNode) {
+  activeNodes.push(node);
+  node.addEventListener(
+    "ended",
+    () => {
+      activeNodes = activeNodes.filter((item) => item !== node);
+    },
+    { once: true },
+  );
+}
+
+function stopActiveSounds(c: AudioContext) {
+  const nodes = activeNodes;
+  activeNodes = [];
+  for (const node of nodes) {
+    try {
+      node.stop(c.currentTime + 0.005);
+    } catch {
+      /* already stopped */
+    }
+  }
 }
 
 function applyPackToTone(t: Tone, pack: SoundPackConfig): Tone {
@@ -165,6 +207,10 @@ export function playSfx(kind: SfxKind) {
   if (!prefs.soundEnabled) return;
   const c = ensureCtx();
   if (!c || !masterGain) return;
+  const now = c.currentTime;
+  if (now - lastPlayedAt < 0.018 && kind === "click") return;
+  lastPlayedAt = now;
+  stopActiveSounds(c);
   const dest = masterGain;
   const packConfig = SOUND_PACK_CONFIG[prefs.soundPack] ?? SOUND_PACK_CONFIG.default;
 
@@ -172,40 +218,133 @@ export function playSfx(kind: SfxKind) {
     case "move":
       // Subtle wooden click — short noise burst + dull tone.
       playNoiseBurst(c, dest, 0.05, 0.05 * packConfig.noiseGainScale, packConfig.noiseFilter);
-      playTone(c, dest, applyPackToTone({ freq: 260, duration: 0.08, gain: 0.12, cutoff: 1800 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone({ freq: 260, duration: 0.08, gain: 0.12, cutoff: 1800 }, packConfig),
+      );
       break;
     case "capture":
       // Heavier thud + brief noise.
       playNoiseBurst(c, dest, 0.09, 0.1 * packConfig.noiseGainScale, packConfig.noiseFilter);
-      playTone(c, dest, applyPackToTone({ freq: 180, duration: 0.14, type: "sine", gain: 0.22, glideTo: 110, cutoff: 1400 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 180, duration: 0.14, type: "sine", gain: 0.22, glideTo: 110, cutoff: 1400 },
+          packConfig,
+        ),
+      );
       break;
     case "check":
-      playTone(c, dest, applyPackToTone({ freq: 880, duration: 0.16, type: "sine", gain: 0.16, cutoff: 5000 }, packConfig));
-      playTone(c, dest, applyPackToTone({ freq: 1320, duration: 0.18, type: "sine", gain: 0.12, delay: 0.06, cutoff: 5000 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 880, duration: 0.16, type: "sine", gain: 0.16, cutoff: 5000 },
+          packConfig,
+        ),
+      );
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 1320, duration: 0.18, type: "sine", gain: 0.12, delay: 0.06, cutoff: 5000 },
+          packConfig,
+        ),
+      );
       break;
     case "checkmate":
     case "loss":
-      playTone(c, dest, applyPackToTone({ freq: 440, duration: 0.22, type: "triangle", gain: 0.2, glideTo: 220, cutoff: 2500 }, packConfig));
-      playTone(c, dest, applyPackToTone({ freq: 330, duration: 0.32, type: "sine", gain: 0.18, delay: 0.18, glideTo: 165, cutoff: 2000 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 440, duration: 0.22, type: "triangle", gain: 0.2, glideTo: 220, cutoff: 2500 },
+          packConfig,
+        ),
+      );
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          {
+            freq: 330,
+            duration: 0.32,
+            type: "sine",
+            gain: 0.18,
+            delay: 0.18,
+            glideTo: 165,
+            cutoff: 2000,
+          },
+          packConfig,
+        ),
+      );
       break;
     case "castle":
       playNoiseBurst(c, dest, 0.05, 0.05 * packConfig.noiseGainScale, packConfig.noiseFilter);
-      playTone(c, dest, applyPackToTone({ freq: 220, duration: 0.07, type: "triangle", gain: 0.12 }, packConfig));
-      playTone(c, dest, applyPackToTone({ freq: 260, duration: 0.08, type: "triangle", gain: 0.12, delay: 0.08 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone({ freq: 220, duration: 0.07, type: "triangle", gain: 0.12 }, packConfig),
+      );
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 260, duration: 0.08, type: "triangle", gain: 0.12, delay: 0.08 },
+          packConfig,
+        ),
+      );
       break;
     case "promotion":
     case "puzzleSuccess":
     case "win":
-      playTone(c, dest, applyPackToTone({ freq: 523, duration: 0.12, type: "sine", gain: 0.16, cutoff: 6000 }, packConfig));
-      playTone(c, dest, applyPackToTone({ freq: 659, duration: 0.12, type: "sine", gain: 0.16, delay: 0.1, cutoff: 6000 }, packConfig));
-      playTone(c, dest, applyPackToTone({ freq: 784, duration: 0.18, type: "sine", gain: 0.18, delay: 0.2, cutoff: 6000 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 523, duration: 0.12, type: "sine", gain: 0.16, cutoff: 6000 },
+          packConfig,
+        ),
+      );
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 659, duration: 0.12, type: "sine", gain: 0.16, delay: 0.1, cutoff: 6000 },
+          packConfig,
+        ),
+      );
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 784, duration: 0.18, type: "sine", gain: 0.18, delay: 0.2, cutoff: 6000 },
+          packConfig,
+        ),
+      );
       break;
     case "puzzleFail":
-      playTone(c, dest, applyPackToTone({ freq: 220, duration: 0.16, type: "sawtooth", gain: 0.12, glideTo: 110, cutoff: 1500 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 220, duration: 0.16, type: "sawtooth", gain: 0.12, glideTo: 110, cutoff: 1500 },
+          packConfig,
+        ),
+      );
       break;
     case "click":
       playNoiseBurst(c, dest, 0.025, 0.04 * packConfig.noiseGainScale, packConfig.noiseFilter);
-      playTone(c, dest, applyPackToTone({ freq: 1800, duration: 0.04, type: "sine", gain: 0.05, cutoff: 8000 }, packConfig));
+      playTone(
+        c,
+        dest,
+        applyPackToTone(
+          { freq: 1800, duration: 0.04, type: "sine", gain: 0.05, cutoff: 8000 },
+          packConfig,
+        ),
+      );
       break;
   }
 }

@@ -2,7 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, Lightbulb, BookOpen, Target } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  Lightbulb,
+  BookOpen,
+  Target,
+} from "lucide-react";
 
 import { Board } from "@/components/chess/Board";
 import { GameLayout } from "@/components/chess/GameLayout";
@@ -18,7 +26,10 @@ export const Route = createFileRoute("/openings")({
   head: () => ({
     meta: [
       { title: "Opening Trainer — ChessCoach" },
-      { name: "description", content: "Learn 20 classical openings move by move with grandmaster-style coaching." },
+      {
+        name: "description",
+        content: "Learn 20 classical openings move by move with grandmaster-style coaching.",
+      },
     ],
   }),
   ssr: false,
@@ -31,7 +42,9 @@ function OpeningsRoute() {
   const [filter, setFilter] = useState<"all" | "white" | "black">("all");
 
   useEffect(() => {
-    listOpeningProgress().then(setProgress).catch(() => null);
+    listOpeningProgress()
+      .then(setProgress)
+      .catch(() => null);
   }, [selectedId]);
 
   if (selectedId) {
@@ -43,14 +56,18 @@ function OpeningsRoute() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 pt-10 pb-nav lg:px-8 lg:pt-16">
-      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/"
+        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Home
       </Link>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold sm:text-4xl">Opening Trainer</h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Twenty classical openings, taught move by move. Every move shows the idea, the goal, and the mistake to avoid.
+            Twenty classical openings, taught move by move. Every move shows the idea, the goal, and
+            the mistake to avoid.
           </p>
         </div>
         <div className="inline-flex shrink-0 self-start rounded-full bg-white/5 p-1 ring-1 ring-white/10">
@@ -84,7 +101,10 @@ function OpeningsRoute() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, delay: Math.min(i * 0.03, 0.3) }}
-              onClick={() => { playSfx("click"); setSelectedId(o.id); }}
+              onClick={() => {
+                playSfx("click");
+                setSelectedId(o.id);
+              }}
               className="group text-left"
             >
               <ClayCard className="h-full transition-transform group-hover:-translate-y-1">
@@ -95,13 +115,19 @@ function OpeningsRoute() {
                       {o.eco} · As {o.trainAs}
                     </p>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                    o.trainAs === "white" ? "bg-foreground/10 text-foreground" : "bg-black/40 text-muted-foreground ring-1 ring-white/10"
-                  }`}>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                      o.trainAs === "white"
+                        ? "bg-foreground/10 text-foreground"
+                        : "bg-black/40 text-muted-foreground ring-1 ring-white/10"
+                    }`}
+                  >
                     {o.trainAs === "white" ? "♔" : "♚"}
                   </span>
                 </div>
-                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{o.description}</p>
+                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                  {o.description}
+                </p>
                 <div className="mt-4 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">{o.moves.length} guided moves</span>
                   {p && p.attempts > 0 && (
@@ -161,67 +187,79 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
           playMoveSfx(mv);
           setMoveIdx(1);
         }
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
     }, 450);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opening.id]);
 
-  const advanceBookSide = useCallback((nextIdx: number) => {
-    if (nextIdx >= opening.moves.length) {
-      setDone(true);
-      playSfx("puzzleSuccess");
-      return;
-    }
-    const isUserNext = nextIdx % 2 === userMoveParity;
-    if (isUserNext) return;
-    const next = opening.moves[nextIdx];
-    setTimeout(() => {
-      try {
-        const mv = chess.move(next.san);
-        if (mv) {
-          setFen(chess.fen());
-          setLastMove({ from: mv.from, to: mv.to });
-          playMoveSfx(mv);
+  const advanceBookSide = useCallback(
+    (nextIdx: number) => {
+      if (nextIdx >= opening.moves.length) {
+        setDone(true);
+        playSfx("puzzleSuccess");
+        return;
+      }
+      const isUserNext = nextIdx % 2 === userMoveParity;
+      if (isUserNext) return;
+      const next = opening.moves[nextIdx];
+      setTimeout(() => {
+        try {
+          const mv = chess.move(next.san);
+          if (mv) {
+            setFen(chess.fen());
+            setLastMove({ from: mv.from, to: mv.to });
+            playMoveSfx(mv);
+          }
+          const after = nextIdx + 1;
+          setMoveIdx(after);
+          if (after >= opening.moves.length) {
+            setDone(true);
+            playSfx("puzzleSuccess");
+          }
+        } catch {
+          /* noop */
         }
-        const after = nextIdx + 1;
-        setMoveIdx(after);
-        if (after >= opening.moves.length) {
-          setDone(true);
-          playSfx("puzzleSuccess");
-        }
-      } catch { /* noop */ }
-    }, 420);
-  }, [chess, opening.moves, userMoveParity]);
+      }, 420);
+    },
+    [chess, opening.moves, userMoveParity],
+  );
 
-  const onMove = useCallback((from: string, to: string) => {
-    if (done) return false;
-    const expected = opening.moves[moveIdx];
-    if (!expected) return false;
-    let mv;
-    try {
-      mv = chess.move({ from, to, promotion: "q" });
-    } catch { return false; }
-    if (!mv) return false;
-    const ok = mv.san === expected.san;
-    if (!ok) {
-      chess.undo();
-      setFeedback({ ok: false, expected, played: mv.san });
-      playSfx("puzzleFail");
-      recordOpeningAttempt(opening.id, opening.name, false);
-      return false;
-    }
-    setFen(chess.fen());
-    setLastMove({ from: mv.from, to: mv.to });
-    playMoveSfx(mv);
-    setFeedback({ ok: true, expected, played: mv.san });
-    setShowHint(false);
-    recordOpeningAttempt(opening.id, opening.name, true);
-    const nextIdx = moveIdx + 1;
-    setMoveIdx(nextIdx);
-    advanceBookSide(nextIdx);
-    return true;
-  }, [advanceBookSide, chess, done, moveIdx, opening.id, opening.moves, opening.name]);
+  const onMove = useCallback(
+    (from: string, to: string) => {
+      if (done) return false;
+      const expected = opening.moves[moveIdx];
+      if (!expected) return false;
+      let mv;
+      try {
+        mv = chess.move({ from, to, promotion: "q" });
+      } catch {
+        return false;
+      }
+      if (!mv) return false;
+      const ok = mv.san === expected.san;
+      if (!ok) {
+        chess.undo();
+        setFeedback({ ok: false, expected, played: mv.san });
+        playSfx("puzzleFail");
+        recordOpeningAttempt(opening.id, opening.name, false);
+        return false;
+      }
+      setFen(chess.fen());
+      setLastMove({ from: mv.from, to: mv.to });
+      playMoveSfx(mv);
+      setFeedback({ ok: true, expected, played: mv.san });
+      setShowHint(false);
+      recordOpeningAttempt(opening.id, opening.name, true);
+      const nextIdx = moveIdx + 1;
+      setMoveIdx(nextIdx);
+      advanceBookSide(nextIdx);
+      return true;
+    },
+    [advanceBookSide, chess, done, moveIdx, opening.id, opening.moves, opening.name],
+  );
 
   const expected = opening.moves[moveIdx];
   const isUserTurn = !done && expected && moveIdx % 2 === userMoveParity;
@@ -290,7 +328,10 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => { setShowHint((v) => !v); playSfx("click"); }}
+                  onClick={() => {
+                    setShowHint((v) => !v);
+                    playSfx("click");
+                  }}
                   className="h-8 rounded-full px-3 text-xs"
                 >
                   <Lightbulb className="h-3.5 w-3.5" />
@@ -304,14 +345,6 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
           </motion.div>
         )}
       </AnimatePresence>
-      {!prefs.coachEnabled && (
-        <GlassPanel>
-          <div className="text-sm leading-relaxed text-muted-foreground">
-            Coach feedback is turned off. Continue through the line without guidance.
-          </div>
-        </GlassPanel>
-      )}
-
       {prefs.coachEnabled && feedback && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
           <ClayCard className={`!p-4 ring-1 ${feedback.ok ? "ring-success/30" : "ring-danger/30"}`}>
@@ -320,82 +353,112 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
                 <>
                   <CheckCircle2 className="h-4 w-4 text-success" />
                   <span className="text-success">Book move</span>
-                  <span className="ml-auto font-mono text-xs text-muted-foreground">{feedback.played}</span>
+                  <span className="ml-auto font-mono text-xs text-muted-foreground">
+                    {feedback.played}
+                  </span>
                 </>
               ) : (
                 <>
                   <XCircle className="h-4 w-4 text-danger" />
                   <span className="text-danger">Not the mainline</span>
-                  <span className="ml-auto font-mono text-xs text-muted-foreground">{feedback.played}</span>
+                  <span className="ml-auto font-mono text-xs text-muted-foreground">
+                    {feedback.played}
+                  </span>
                 </>
               )}
             </div>
             {!feedback.ok && (
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                The book continues with <span className="font-mono text-gold">{feedback.expected.san}</span>.
-                {" "}{feedback.expected.why}
+                The book continues with{" "}
+                <span className="font-mono text-gold">{feedback.expected.san}</span>.{" "}
+                {feedback.expected.why}
               </p>
             )}
             {feedback.ok && feedback.expected.tip && (
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                <span className="text-gold">Tip · </span>{feedback.expected.tip}
+                <span className="text-gold">Tip · </span>
+                {feedback.expected.tip}
               </p>
             )}
           </ClayCard>
         </motion.div>
       )}
 
-      <GlassPanel>
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          <Target className="h-3.5 w-3.5 text-gold" /> Middlegame plan
-        </div>
-        <ul className="mt-3 space-y-2 text-sm leading-relaxed text-foreground/85">
-          {opening.plans.slice(0, 3).map((p, i) => (
-            <li key={i} className="flex gap-2">
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
-              <span>{p}</span>
-            </li>
-          ))}
-        </ul>
-        {opening.motifs.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {opening.motifs.map((m) => (
-              <span key={m} className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-muted-foreground ring-1 ring-white/10">
-                {m}
-              </span>
-            ))}
-          </div>
-        )}
-      </GlassPanel>
+      {prefs.coachEnabled && (
+        <>
+          <GlassPanel>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Target className="h-3.5 w-3.5 text-gold" /> Middlegame plan
+            </div>
+            <ul className="mt-3 space-y-2 text-sm leading-relaxed text-foreground/85">
+              {opening.plans.slice(0, 3).map((p, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+            {opening.motifs.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {opening.motifs.map((m) => (
+                  <span
+                    key={m}
+                    className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-muted-foreground ring-1 ring-white/10"
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+            )}
+          </GlassPanel>
 
-      <GlassPanel>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mainline</h4>
-        <ol className="mt-3 max-h-48 space-y-1 overflow-y-auto pr-1 text-sm no-scrollbar">
-          {movePairs.map((p, i) => {
-            const wIdx = i * 2;
-            const bIdx = i * 2 + 1;
-            return (
-              <li key={p.n} className="grid grid-cols-[2rem_1fr_1fr] gap-2 font-mono">
-                <span className="text-muted-foreground">{p.n}.</span>
-                <span className={wIdx < moveIdx ? "text-foreground" : "text-muted-foreground/60"}>{p.white?.san ?? ""}</span>
-                <span className={bIdx < moveIdx ? "text-foreground" : "text-muted-foreground/60"}>{p.black?.san ?? ""}</span>
-              </li>
-            );
-          })}
-        </ol>
-      </GlassPanel>
+          <GlassPanel>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Mainline
+            </h4>
+            <ol className="mt-3 max-h-48 space-y-1 overflow-y-auto pr-1 text-sm no-scrollbar">
+              {movePairs.map((p, i) => {
+                const wIdx = i * 2;
+                const bIdx = i * 2 + 1;
+                return (
+                  <li key={p.n} className="grid grid-cols-[2rem_1fr_1fr] gap-2 font-mono">
+                    <span className="text-muted-foreground">{p.n}.</span>
+                    <span
+                      className={wIdx < moveIdx ? "text-foreground" : "text-muted-foreground/60"}
+                    >
+                      {p.white?.san ?? ""}
+                    </span>
+                    <span
+                      className={bIdx < moveIdx ? "text-foreground" : "text-muted-foreground/60"}
+                    >
+                      {p.black?.san ?? ""}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </GlassPanel>
+        </>
+      )}
 
       {done && (
         <ClayCard className="!p-5 ring-1 ring-gold/30 glow-gold">
           <h4 className="text-lg font-bold text-gold">Mainline complete</h4>
           <p className="mt-1 text-sm text-muted-foreground">
-            You played the full {opening.name} mainline. Replay it to lock it in, or try another opening.
+            You played the full {opening.name} mainline. Replay it to lock it in, or try another
+            opening.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button size="sm" onClick={reset} className="bg-gold text-primary-foreground hover:bg-gold/90">
+            <Button
+              size="sm"
+              onClick={reset}
+              className="bg-gold text-primary-foreground hover:bg-gold/90"
+            >
               <RotateCcw className="h-4 w-4" /> Replay
             </Button>
-            <Button size="sm" variant="outline" onClick={onBack}>Choose another</Button>
+            <Button size="sm" variant="outline" onClick={onBack}>
+              Choose another
+            </Button>
           </div>
         </ClayCard>
       )}
@@ -406,7 +469,10 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
     <GameLayout
       topBar={
         <div className="flex items-center justify-between gap-3">
-          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" /> Openings
           </button>
           <Button size="sm" variant="ghost" onClick={reset}>

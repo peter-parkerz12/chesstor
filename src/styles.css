@@ -52,16 +52,16 @@
   --radius: 1rem;
 
   /* Charcoal palette — chromaless, editorial */
-  --background: oklch(0.145 0 0);        /* #090A0B */
-  --foreground: oklch(0.96 0.005 80);    /* #F5F3EE */
-  --surface:   oklch(0.185 0 0);         /* #131518 */
-  --surface-2: oklch(0.215 0 0);         /* #171A1D */
+  --background: oklch(0.145 0 0); /* #090A0B */
+  --foreground: oklch(0.96 0.005 80); /* #F5F3EE */
+  --surface: oklch(0.185 0 0); /* #131518 */
+  --surface-2: oklch(0.215 0 0); /* #171A1D */
   --card: oklch(0.185 0 0);
   --card-foreground: oklch(0.96 0.005 80);
   --popover: oklch(0.185 0 0);
   --popover-foreground: oklch(0.96 0.005 80);
 
-  --primary: oklch(0.82 0.1 80);         /* #E2B96F warm gold, restrained */
+  --primary: oklch(0.82 0.1 80); /* #E2B96F warm gold, restrained */
   --primary-foreground: oklch(0.14 0 0);
   --gold: oklch(0.82 0.1 80);
 
@@ -74,7 +74,7 @@
 
   --success: oklch(0.78 0.13 145);
   --warning: oklch(0.78 0.13 70);
-  --danger:  oklch(0.7 0.17 25);
+  --danger: oklch(0.7 0.17 25);
   --destructive: oklch(0.7 0.17 25);
   --destructive-foreground: oklch(0.98 0 0);
 
@@ -84,14 +84,10 @@
 
   /* Effects — subtle, no glow noise */
   --shadow-clay:
-    0 24px 48px -28px rgb(0 0 0 / 0.7),
-    0 6px 18px -12px rgb(0 0 0 / 0.45),
+    0 24px 48px -28px rgb(0 0 0 / 0.7), 0 6px 18px -12px rgb(0 0 0 / 0.45),
     inset 0 1px 0 0 rgb(255 255 255 / 0.04);
-  --shadow-clay-sm:
-    0 10px 22px -14px rgb(0 0 0 / 0.6),
-    inset 0 1px 0 0 rgb(255 255 255 / 0.035);
-  --shadow-glow-gold:
-    0 0 0 1px oklch(0.82 0.1 80 / 0.22);
+  --shadow-clay-sm: 0 10px 22px -14px rgb(0 0 0 / 0.6), inset 0 1px 0 0 rgb(255 255 255 / 0.035);
+  --shadow-glow-gold: 0 0 0 1px oklch(0.82 0.1 80 / 0.22);
 
   /* Near-flat charcoal background — no blue, no rainbow radials */
   --gradient-bg:
@@ -105,8 +101,12 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.dark { color-scheme: dark; }
-.light { color-scheme: light; }
+.dark {
+  color-scheme: dark;
+}
+.light {
+  color-scheme: light;
+}
 
 :root.light {
   --background: oklch(0.96 0.02 105);
@@ -145,8 +145,14 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body, #root { height: 100%; }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
   body {
     background: var(--gradient-bg);
     background-attachment: fixed;
@@ -159,38 +165,54 @@
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
   }
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.022em;
     font-feature-settings: "ss01", "cv11";
   }
-  h1 { letter-spacing: -0.03em; }
-  p { letter-spacing: -0.005em; }
-  input, select, textarea { font-size: max(16px, 1rem); }
+  h1 {
+    letter-spacing: -0.03em;
+  }
+  p {
+    letter-spacing: -0.005em;
+  }
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
   :where(button, a, [role="button"], input, select, textarea):focus-visible {
     outline: 1.5px solid var(--ring);
     outline-offset: 2px;
     border-radius: 12px;
   }
-  ::selection { background: oklch(0.82 0.1 80 / 0.28); color: var(--foreground); }
+  ::selection {
+    background: oklch(0.82 0.1 80 / 0.28);
+    color: var(--foreground);
+  }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
   }
 }
 
-@utility pb-nav { padding-bottom: var(--nav-height); }
+@utility pb-nav {
+  padding-bottom: var(--nav-height);
+}
 
 /* ============================================================
    Reusable surface utilities — flatter, more architectural
    ============================================================ */
 
 @utility clay-card {
-  background: linear-gradient(180deg,
-    oklch(0.22 0 0 / 0.85),
-    oklch(0.185 0 0 / 0.85));
+  background: linear-gradient(180deg, oklch(0.22 0 0 / 0.85), oklch(0.185 0 0 / 0.85));
   border: 1px solid oklch(1 0 0 / 0.06);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-clay);
@@ -198,18 +220,14 @@
 }
 
 @utility clay-card-sm {
-  background: linear-gradient(180deg,
-    oklch(0.215 0 0 / 0.8),
-    oklch(0.185 0 0 / 0.8));
+  background: linear-gradient(180deg, oklch(0.215 0 0 / 0.8), oklch(0.185 0 0 / 0.8));
   border: 1px solid oklch(1 0 0 / 0.05);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-clay-sm);
 }
 
 @utility glass-panel {
-  background: linear-gradient(180deg,
-    oklch(1 0 0 / 0.04),
-    oklch(1 0 0 / 0.015));
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.015));
   border: 1px solid oklch(1 0 0 / 0.06);
   border-radius: var(--radius-xl);
   backdrop-filter: blur(20px) saturate(120%);
@@ -219,13 +237,55 @@
 }
 
 @utility clay-inset {
-  background: linear-gradient(180deg,
-    oklch(0.13 0 0),
-    oklch(0.17 0 0));
+  background: linear-gradient(180deg, oklch(0.13 0 0), oklch(0.17 0 0));
   box-shadow:
     inset 0 1px 4px 0 rgb(0 0 0 / 0.45),
     inset 0 -1px 0 0 oklch(1 0 0 / 0.03);
   border-radius: var(--radius-xl);
+}
+
+.light .clay-card {
+  background: linear-gradient(180deg, oklch(0.995 0.006 95 / 0.92), oklch(0.965 0.01 90 / 0.92));
+  border-color: oklch(0.15 0.01 45 / 0.12);
+  box-shadow:
+    0 24px 48px -34px rgb(65 45 20 / 0.24),
+    0 8px 22px -18px rgb(65 45 20 / 0.18),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.88);
+}
+
+.light .clay-card-sm {
+  background: linear-gradient(180deg, oklch(0.99 0.006 95 / 0.9), oklch(0.965 0.01 90 / 0.9));
+  border-color: oklch(0.15 0.01 45 / 0.1);
+  box-shadow:
+    0 12px 28px -22px rgb(65 45 20 / 0.22),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.8);
+}
+
+.light .glass-panel {
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.74), oklch(0.96 0.01 90 / 0.58));
+  border-color: oklch(0.15 0.01 45 / 0.12);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.86),
+    0 18px 34px -28px rgb(65 45 20 / 0.22);
+}
+
+.light .clay-inset {
+  background: linear-gradient(180deg, oklch(0.92 0.01 90), oklch(0.98 0.006 95));
+  box-shadow:
+    inset 0 1px 4px 0 rgb(65 45 20 / 0.12),
+    inset 0 -1px 0 0 rgb(255 255 255 / 0.65);
+}
+
+.light .board-frame {
+  background: linear-gradient(180deg, oklch(0.95 0.012 90), oklch(0.9 0.012 85));
+  border-color: oklch(0.15 0.01 45 / 0.12);
+  box-shadow:
+    0 24px 48px -32px rgb(65 45 20 / 0.32),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.78);
+}
+
+.light .grain::after {
+  opacity: 0.012;
 }
 
 @utility glow-gold {
@@ -249,16 +309,18 @@
 }
 
 /* Hide scrollbar but keep scroll */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
 
 /* Chess board container — minimal, structural */
 .board-frame {
   border-radius: var(--radius-xl);
   padding: 10px;
-  background: linear-gradient(180deg,
-    oklch(0.22 0 0),
-    oklch(0.17 0 0));
+  background: linear-gradient(180deg, oklch(0.22 0 0), oklch(0.17 0 0));
   border: 1px solid oklch(1 0 0 / 0.05);
   box-shadow:
     0 20px 50px -30px rgb(0 0 0 / 0.8),
@@ -267,10 +329,27 @@
 
 /* Single-pulse check warning */
 @keyframes check-pulse {
-  0%   { box-shadow: inset 0 0 0 2px oklch(0.7 0.17 25 / 0.0), 0 0 0 0 oklch(0.7 0.17 25 / 0.0); }
-  35%  { box-shadow: inset 0 0 0 3px oklch(0.7 0.17 25 / 0.85), 0 0 20px 2px oklch(0.7 0.17 25 / 0.3); }
-  100% { box-shadow: inset 0 0 0 2px oklch(0.7 0.17 25 / 0.55), 0 0 0 0 oklch(0.7 0.17 25 / 0.0); }
+  0% {
+    box-shadow:
+      inset 0 0 0 2px oklch(0.7 0.17 25 / 0),
+      0 0 0 0 oklch(0.7 0.17 25 / 0);
+  }
+  35% {
+    box-shadow:
+      inset 0 0 0 3px oklch(0.7 0.17 25 / 0.85),
+      0 0 20px 2px oklch(0.7 0.17 25 / 0.3);
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 2px oklch(0.7 0.17 25 / 0.55),
+      0 0 0 0 oklch(0.7 0.17 25 / 0);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  @keyframes check-pulse { 0%, 100% { box-shadow: inset 0 0 0 2px oklch(0.7 0.17 25 / 0.55); } }
+  @keyframes check-pulse {
+    0%,
+    100% {
+      box-shadow: inset 0 0 0 2px oklch(0.7 0.17 25 / 0.55);
+    }
+  }
 }

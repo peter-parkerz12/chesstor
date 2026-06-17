@@ -1,13 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type BoardThemeId = "walnut" | "slate" | "ivory";
 export type PieceSetId = "staunton" | "modern" | "glass";
 export type ThemeMode = "light" | "dark";
-export type SoundPackId =
-  | "default"
-  | "classic-tournament"
-  | "modern-digital"
-  | "premium-luxury";
+export type SoundPackId = "default" | "classic-tournament" | "modern-digital" | "premium-luxury";
 
 export type BoardTheme = {
   id: BoardThemeId;
@@ -95,10 +91,33 @@ const DEFAULTS: Preferences = {
 };
 
 const KEY = "chesscoach:prefs:v1";
+const THEME_COLOR: Record<ThemeMode, string> = {
+  dark: "#090A0B",
+  light: "#F8F6EF",
+};
 
 function inferSystemTheme(): ThemeMode {
   if (typeof window === "undefined") return DEFAULTS.theme;
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function isTheme(value: unknown): value is ThemeMode {
+  return value === "light" || value === "dark";
+}
+
+function clampVolume(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.min(1, Math.max(0, value))
+    : DEFAULTS.soundVolume;
+}
+
+export function applyTheme(theme: ThemeMode) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  root.classList.toggle("dark", theme === "dark");
+  root.classList.toggle("light", theme === "light");
+  root.style.colorScheme = theme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme]);
 }
 
 function read(): Preferences {
@@ -113,8 +132,11 @@ function read(): Preferences {
     const preferences: Preferences = {
       ...DEFAULTS,
       ...saved,
-      theme: saved.theme ?? inferSystemTheme(),
+      theme: isTheme(saved.theme) ? saved.theme : inferSystemTheme(),
       soundPack: saved.soundPack ?? DEFAULTS.soundPack,
+      soundVolume: clampVolume(saved.soundVolume),
+      soundEnabled:
+        typeof saved.soundEnabled === "boolean" ? saved.soundEnabled : DEFAULTS.soundEnabled,
       coachEnabled: saved.coachEnabled ?? saved.aiHints ?? DEFAULTS.coachEnabled,
     };
     if (preferences.pieceSet === "minimalist") preferences.pieceSet = "glass";
@@ -127,6 +149,7 @@ function read(): Preferences {
 function write(p: Preferences) {
   if (typeof window === "undefined") return;
   try {
+    applyTheme(p.theme);
     window.localStorage.setItem(KEY, JSON.stringify(p));
     window.dispatchEvent(new CustomEvent("chesscoach:prefs", { detail: p }));
   } catch {
@@ -150,17 +173,29 @@ export function getPieceSet(id?: PieceSetId): PieceSet {
 
 /** Subscribe to preference changes (same-tab + storage events). */
 export function usePreferences(): [Preferences, (patch: Partial<Preferences>) => void] {
-  const [prefs, setPrefs] = useState<Preferences>(DEFAULTS);
+  const [prefs, setPrefs] = useState<Preferences>(() => read());
 
   useEffect(() => {
-    setPrefs(read());
+    const initial = read();
+    applyTheme(initial.theme);
+    setPrefs(initial);
     const onCustom = (e: Event) => {
       const detail = (e as CustomEvent<Preferences>).detail;
-      if (detail) setPrefs(detail);
-      else setPrefs(read());
+      if (detail) {
+        applyTheme(detail.theme);
+        setPrefs(detail);
+      } else {
+        const next = read();
+        applyTheme(next.theme);
+        setPrefs(next);
+      }
     };
     const onStorage = (e: StorageEvent) => {
-      if (e.key === KEY) setPrefs(read());
+      if (e.key === KEY) {
+        const next = read();
+        applyTheme(next.theme);
+        setPrefs(next);
+      }
     };
     window.addEventListener("chesscoach:prefs", onCustom);
     window.addEventListener("storage", onStorage);
@@ -170,11 +205,11 @@ export function usePreferences(): [Preferences, (patch: Partial<Preferences>) =>
     };
   }, []);
 
-  const update = (patch: Partial<Preferences>) => {
+  const update = useCallback((patch: Partial<Preferences>) => {
     const next = { ...read(), ...patch };
     write(next);
     setPrefs(next);
-  };
+  }, []);
 
   return [prefs, update];
 }

@@ -51,7 +51,10 @@ export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
       { title: "Settings — ChessCoach" },
-      { name: "description", content: "Customize board theme, piece set, sound, and gameplay hints." },
+      {
+        name: "description",
+        content: "Customize board theme, piece set, sound, and gameplay hints.",
+      },
     ],
   }),
   ssr: false,
@@ -63,7 +66,10 @@ function SettingsRoute() {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-5 pt-10 pb-nav lg:px-8 lg:pt-16">
-      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/"
+        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Home
       </Link>
       <h1 className="text-3xl font-bold sm:text-4xl">Settings</h1>
@@ -72,14 +78,21 @@ function SettingsRoute() {
       </p>
 
       <section className="mt-10">
-        <SectionHeading icon={Palette} title="Board theme" subtitle="Tap to preview instantly across every board." />
+        <SectionHeading
+          icon={Palette}
+          title="Board theme"
+          subtitle="Tap to preview instantly across every board."
+        />
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {BOARD_THEMES.map((t) => {
             const active = prefs.boardTheme === t.id;
             return (
               <motion.button
                 key={t.id}
-                onClick={() => { setPrefs({ boardTheme: t.id }); playSfx("click"); }}
+                onClick={() => {
+                  setPrefs({ boardTheme: t.id });
+                  playSfx("click");
+                }}
                 whileTap={{ scale: 0.98 }}
                 className={`group text-left ${active ? "ring-2 ring-gold/60 rounded-3xl" : ""}`}
               >
@@ -124,7 +137,10 @@ function SettingsRoute() {
             return (
               <motion.button
                 key={p.id}
-                onClick={() => { setPrefs({ pieceSet: p.id }); playSfx("click"); }}
+                onClick={() => {
+                  setPrefs({ pieceSet: p.id });
+                  playSfx("click");
+                }}
                 whileTap={{ scale: 0.98 }}
                 className={`text-left ${active ? "ring-2 ring-gold/60 rounded-3xl" : ""}`}
               >
@@ -153,15 +169,28 @@ function SettingsRoute() {
         <GlassPanel>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.soundEnabled ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
-                {prefs.soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.soundEnabled ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}
+              >
+                {prefs.soundEnabled ? (
+                  <Volume2 className="h-4 w-4" />
+                ) : (
+                  <VolumeX className="h-4 w-4" />
+                )}
               </div>
               <div>
                 <p className="text-sm font-semibold">Sound effects</p>
                 <p className="text-xs text-muted-foreground">Move, capture, check, win sounds.</p>
               </div>
             </div>
-            <Toggle on={prefs.soundEnabled} onChange={(v) => { setPrefs({ soundEnabled: v }); if (v) playSfx("click"); }} />
+            <Toggle
+              label="Sound effects"
+              on={prefs.soundEnabled}
+              onChange={(v) => {
+                setPrefs({ soundEnabled: v });
+                if (v) playSfx("click");
+              }}
+            />
           </div>
           <div className="mt-5">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -186,36 +215,59 @@ function SettingsRoute() {
         <GlassPanel>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.coachEnabled ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
-                {prefs.coachEnabled ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.coachEnabled ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}
+              >
+                {prefs.coachEnabled ? (
+                  <Lightbulb className="h-4 w-4" />
+                ) : (
+                  <LightbulbOff className="h-4 w-4" />
+                )}
               </div>
               <div>
                 <p className="text-sm font-semibold">Coach feedback</p>
-                <p className="text-xs text-muted-foreground">Hide or restore coaching features instantly.</p>
+                <p className="text-xs text-muted-foreground">
+                  Hide or restore coaching features instantly.
+                </p>
               </div>
             </div>
-            <Toggle on={prefs.coachEnabled} onChange={(v) => { setPrefs({ coachEnabled: v }); playSfx("click"); }} />
+            <Toggle
+              label="Coach feedback"
+              on={prefs.coachEnabled}
+              onChange={(v) => {
+                setPrefs({ coachEnabled: v });
+                playSfx("click");
+              }}
+            />
           </div>
         </GlassPanel>
 
         <GlassPanel>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.theme === "dark" ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
-                {prefs.theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.theme === "dark" ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}
+              >
+                {prefs.theme === "dark" ? (
+                  <Moon className="h-4 w-4" />
+                ) : (
+                  <Sun className="h-4 w-4" />
+                )}
               </div>
               <div>
                 <p className="text-sm font-semibold">Theme</p>
-                <p className="text-xs text-muted-foreground">Enjoy a polished light or dark interface.</p>
+                <p className="text-xs text-muted-foreground">
+                  Enjoy a polished light or dark interface.
+                </p>
               </div>
             </div>
             <button
               type="button"
+              role="switch"
+              aria-checked={prefs.theme === "dark"}
               onClick={() => {
                 const next = prefs.theme === "dark" ? "light" : "dark";
                 setPrefs({ theme: next });
-                document.documentElement.classList.toggle("dark", next === "dark");
-                document.documentElement.classList.toggle("light", next === "light");
                 playSfx("click");
               }}
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
@@ -234,7 +286,11 @@ function SettingsRoute() {
       </section>
 
       <section className="mt-8">
-        <SectionHeading icon={Music2} title="Sound pack" subtitle="Choose the premium audio experience that fits your style." />
+        <SectionHeading
+          icon={Music2}
+          title="Sound pack"
+          subtitle="Choose the premium audio experience that fits your style."
+        />
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {SOUND_PACKS.map((pack) => {
             const active = prefs.soundPack === pack.id;
@@ -242,7 +298,10 @@ function SettingsRoute() {
               <button
                 key={pack.id}
                 type="button"
-                onClick={() => { setPrefs({ soundPack: pack.id }); playSfx("click"); }}
+                onClick={() => {
+                  setPrefs({ soundPack: pack.id });
+                  playSfx("click");
+                }}
                 className={`group text-left rounded-3xl border p-4 transition-colors ${active ? "border-gold/40 bg-gold/10" : "border-white/10 bg-white/5 hover:border-white/20"}`}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -262,8 +321,14 @@ function SettingsRoute() {
 }
 
 function SectionHeading({
-  icon: Icon, title, subtitle,
-}: { icon: typeof Palette; title: string; subtitle: string }) {
+  icon: Icon,
+  title,
+  subtitle,
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+}) {
   return (
     <div className="flex items-start gap-3">
       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-gold">
@@ -277,12 +342,21 @@ function SectionHeading({
   );
 }
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  on,
+  onChange,
+}: {
+  label: string;
+  on: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={on}
+      aria-label={label}
       onClick={() => onChange(!on)}
       className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
         on ? "bg-gold" : "bg-white/15"
