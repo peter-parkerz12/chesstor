@@ -3,6 +3,7 @@ import { Chessboard } from "react-chessboard";
 import type { Arrow } from "react-chessboard";
 
 import { usePreferences, getBoardTheme, getPieceSet } from "@/lib/settings/preferences";
+import { getPieceRenderer } from "@/lib/chess/pieceSets";
 
 type Props = {
   fen: string;
@@ -69,7 +70,7 @@ export function Board({
   }
 
   return (
-    <div className="board-frame" data-piece-set={pieceSet.id} style={{ ["--piece-filter" as never]: pieceSet.filter }}>
+    <div className="board-frame" data-piece-set={pieceSet.id}>
       <Chessboard
         options={{
           position: fen,
@@ -78,9 +79,10 @@ export function Board({
           showAnimations: true,
           animationDurationInMs: 220,
           arrows,
+          pieces: getPieceRenderer(pieceSet.id),
           darkSquareStyle: { backgroundColor: theme.dark },
           lightSquareStyle: { backgroundColor: theme.light },
-          dropSquareStyle: { boxShadow: "inset 0 0 0 3px oklch(0.82 0.13 80 / 0.85)" },
+          dropSquareStyle: { boxShadow: "inset 0 0 0 3px oklch(0.82 0.1 80 / 0.85)" },
           squareStyles,
           boardStyle: {
             borderRadius: 16,
