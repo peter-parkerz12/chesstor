@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export type BoardThemeId = "walnut" | "slate" | "ivory";
-export type PieceSetId = "staunton" | "modern" | "minimalist";
+export type PieceSetId = "staunton" | "modern" | "glass";
 
 export type BoardTheme = {
   id: BoardThemeId;
@@ -9,7 +9,7 @@ export type BoardTheme = {
   description: string;
   light: string;
   dark: string;
-  /** Color used for square-coordinate text on light squares. */
+  /** Color used for square-coordinate text. */
   lightText: string;
   darkText: string;
 };
@@ -18,7 +18,7 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "walnut",
     name: "Classic Walnut",
-    description: "Tournament wood — warm and timeless.",
+    description: "Tournament wood — warm, timeless contrast.",
     light: "#E8D2A6",
     dark: "#7A4E2D",
     lightText: "#5A3A1F",
@@ -27,20 +27,20 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "slate",
     name: "Midnight Slate",
-    description: "High-visibility modern grays.",
-    light: "#D6DCE3",
-    dark: "#3B4252",
-    lightText: "#2E3440",
-    darkText: "#ECEFF4",
+    description: "Modern grayscale, maximum readability.",
+    light: "#C9CFD7",
+    dark: "#2E3340",
+    lightText: "#2E3340",
+    darkText: "#E6EAF0",
   },
   {
     id: "ivory",
     name: "Ivory & Ebony",
-    description: "Clean editorial contrast.",
-    light: "#F0ECE3",
-    dark: "#1A1A2E",
-    lightText: "#1A1A2E",
-    darkText: "#F0ECE3",
+    description: "Editorial high-contrast tournament look.",
+    light: "#EDE7DA",
+    dark: "#141519",
+    lightText: "#141519",
+    darkText: "#EDE7DA",
   },
 ];
 
@@ -48,8 +48,6 @@ export type PieceSet = {
   id: PieceSetId;
   name: string;
   description: string;
-  /** CSS filter applied to default piece rendering. */
-  filter: string;
 };
 
 export const PIECE_SETS: PieceSet[] = [
@@ -57,19 +55,16 @@ export const PIECE_SETS: PieceSet[] = [
     id: "staunton",
     name: "Premium Staunton",
     description: "Crisp classical pieces — the tournament standard.",
-    filter: "none",
   },
   {
     id: "modern",
-    name: "Modern Tournament",
-    description: "Slightly bolder, higher contrast for sharper reading.",
-    filter: "contrast(1.12) saturate(1.05)",
+    name: "Modern Minimal",
+    description: "Clean geometric silhouettes, no outline.",
   },
   {
-    id: "minimalist",
-    name: "Minimalist",
-    description: "Soft, low-contrast pieces for a calm board.",
-    filter: "contrast(0.92) brightness(1.04) saturate(0.85)",
+    id: "glass",
+    name: "Elite Glass",
+    description: "Refined hairline outlines, premium clarity.",
   },
 ];
 
@@ -96,7 +91,10 @@ function read(): Preferences {
   try {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) return DEFAULTS;
-    return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Preferences>) };
+    const parsed = { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Preferences>) };
+    // Migrate legacy "minimalist" id to new "glass".
+    if ((parsed.pieceSet as string) === "minimalist") parsed.pieceSet = "glass";
+    return parsed;
   } catch {
     return DEFAULTS;
   }
