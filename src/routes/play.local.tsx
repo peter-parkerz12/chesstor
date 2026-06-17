@@ -82,6 +82,10 @@ function PassAndPlay() {
   const orientation = chess.turn() === "w" ? "white" : "black";
   const isWhite = chess.turn() === "w";
   const turnLabel = isWhite ? "White to move" : "Black to move";
+  const inCheck = chess.inCheck();
+  const checkSq = inCheck ? findKingSquare(chess, chess.turn()) : null;
+  const checkHighlight = checkSq ? { [checkSq]: "check" as const } : {};
+  const resultVariant: "win" | "loss" | "draw" = chess.isCheckmate() ? "win" : "draw";
   const resultText = chess.isCheckmate()
     ? `${chess.turn() === "w" ? "Black" : "White"} wins`
     : chess.isDraw() ? "Draw" : "";
