@@ -109,8 +109,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `;(function(){try{var raw=localStorage.getItem('chesscoach:prefs:v1');var theme='dark';if(raw){var parsed=JSON.parse(raw);if(parsed && parsed.theme){theme=parsed.theme;}else{theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}}else{theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.classList.add(theme);document.documentElement.classList.remove(theme==='dark'?'light':'dark');}catch(e){}})();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body className="grain">

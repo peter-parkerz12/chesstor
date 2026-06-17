@@ -8,16 +8,44 @@ import {
   Lightbulb,
   LightbulbOff,
   Check,
+  Moon,
+  Sun,
+  Music2,
+  type LucideIcon,
 } from "lucide-react";
 
 import { ClayCard, GlassPanel } from "@/components/ui/surfaces";
 import {
   BOARD_THEMES,
   PIECE_SETS,
+  type SoundPackId,
   usePreferences,
 } from "@/lib/settings/preferences";
 import { playSfx } from "@/lib/audio/sfx";
 import { PieceSetPreview } from "@/lib/chess/pieceSets";
+
+const SOUND_PACKS: Array<{ id: SoundPackId; name: string; description: string }> = [
+  {
+    id: "default",
+    name: "Default",
+    description: "Balanced acoustic chess tones for every move.",
+  },
+  {
+    id: "classic-tournament",
+    name: "Classic Tournament",
+    description: "Clean wooden-board sounds with warm resonance.",
+  },
+  {
+    id: "modern-digital",
+    name: "Modern Digital",
+    description: "Crisp app-style tones with tight, polished impact.",
+  },
+  {
+    id: "premium-luxury",
+    name: "Premium Luxury",
+    description: "Deep refined tones with premium cinematic character.",
+  },
+];
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -55,7 +83,7 @@ function SettingsRoute() {
                 whileTap={{ scale: 0.98 }}
                 className={`group text-left ${active ? "ring-2 ring-gold/60 rounded-3xl" : ""}`}
               >
-                <ClayCard className="!p-4">
+                <ClayCard className="p-4!">
                   <div className="grid grid-cols-4 grid-rows-4 overflow-hidden rounded-xl">
                     {Array.from({ length: 16 }).map((_, i) => {
                       const r = Math.floor(i / 4);
@@ -100,9 +128,9 @@ function SettingsRoute() {
                 whileTap={{ scale: 0.98 }}
                 className={`text-left ${active ? "ring-2 ring-gold/60 rounded-3xl" : ""}`}
               >
-                <ClayCard className="!p-4">
+                <ClayCard className="p-4!">
                   <div
-                    className="flex items-center justify-center rounded-xl bg-white/[0.025] px-2 py-3 ring-1 ring-white/5"
+                    className="flex items-center justify-center rounded-xl bg-white/2.5 px-2 py-3 ring-1 ring-white/5"
                     aria-hidden
                   >
                     <PieceSetPreview id={p.id} />
@@ -121,7 +149,7 @@ function SettingsRoute() {
         </div>
       </section>
 
-      <section className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <section className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <GlassPanel>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -149,7 +177,7 @@ function SettingsRoute() {
               onMouseUp={() => playSfx("move")}
               onTouchEnd={() => playSfx("move")}
               disabled={!prefs.soundEnabled}
-              className="mt-2 w-full accent-[var(--gold)] disabled:opacity-40"
+              className="mt-2 w-full accent-gold disabled:opacity-40"
               aria-label="Sound volume"
             />
           </div>
@@ -158,17 +186,76 @@ function SettingsRoute() {
         <GlassPanel>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.aiHints ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
-                {prefs.aiHints ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.coachEnabled ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
+                {prefs.coachEnabled ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
               </div>
               <div>
-                <p className="text-sm font-semibold">Real-time move hints</p>
-                <p className="text-xs text-muted-foreground">Show best-move arrows after slips in Play vs AI.</p>
+                <p className="text-sm font-semibold">Coach feedback</p>
+                <p className="text-xs text-muted-foreground">Hide or restore coaching features instantly.</p>
               </div>
             </div>
-            <Toggle on={prefs.aiHints} onChange={(v) => { setPrefs({ aiHints: v }); playSfx("click"); }} />
+            <Toggle on={prefs.coachEnabled} onChange={(v) => { setPrefs({ coachEnabled: v }); playSfx("click"); }} />
           </div>
         </GlassPanel>
+
+        <GlassPanel>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${prefs.theme === "dark" ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
+                {prefs.theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Theme</p>
+                <p className="text-xs text-muted-foreground">Enjoy a polished light or dark interface.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const next = prefs.theme === "dark" ? "light" : "dark";
+                setPrefs({ theme: next });
+                document.documentElement.classList.toggle("dark", next === "dark");
+                document.documentElement.classList.toggle("light", next === "light");
+                playSfx("click");
+              }}
+              className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
+                prefs.theme === "dark" ? "bg-gold" : "bg-white/15"
+              }`}
+              aria-label="Toggle theme"
+            >
+              <motion.span
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow ${prefs.theme === "dark" ? "right-0.5" : "left-0.5"}`}
+              />
+            </button>
+          </div>
+        </GlassPanel>
+      </section>
+
+      <section className="mt-8">
+        <SectionHeading icon={Music2} title="Sound pack" subtitle="Choose the premium audio experience that fits your style." />
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {SOUND_PACKS.map((pack) => {
+            const active = prefs.soundPack === pack.id;
+            return (
+              <button
+                key={pack.id}
+                type="button"
+                onClick={() => { setPrefs({ soundPack: pack.id }); playSfx("click"); }}
+                className={`group text-left rounded-3xl border p-4 transition-colors ${active ? "border-gold/40 bg-gold/10" : "border-white/10 bg-white/5 hover:border-white/20"}`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold">{pack.name}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{pack.description}</p>
+                  </div>
+                  {active && <Check className="h-4 w-4 text-gold" />}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </section>
     </div>
   );

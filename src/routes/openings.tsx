@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { OPENINGS, findOpening, type Opening, type MoveNote } from "@/lib/openings/database";
 import { recordOpeningAttempt, listOpeningProgress, type OpeningProgress } from "@/lib/db/idb";
 import { useGameMode } from "@/components/nav/island-context";
+import { usePreferences } from "@/lib/settings/preferences";
 import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
 
 export const Route = createFileRoute("/openings")({
@@ -118,6 +119,7 @@ function OpeningsRoute() {
 
 function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => void }) {
   useGameMode(true);
+  const [prefs] = usePreferences();
   const [chess] = useState(() => new Chess());
   const [fen, setFen] = useState(chess.fen());
   const [moveIdx, setMoveIdx] = useState(0);
@@ -256,7 +258,7 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
       </ClayCard>
 
       <AnimatePresence mode="wait">
-        {isUserTurn && (
+        {isUserTurn && prefs.coachEnabled && (
           <motion.div
             key={`coach-${moveIdx}`}
             initial={{ opacity: 0, y: 6 }}
@@ -302,8 +304,15 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
           </motion.div>
         )}
       </AnimatePresence>
+      {!prefs.coachEnabled && (
+        <GlassPanel>
+          <div className="text-sm leading-relaxed text-muted-foreground">
+            Coach feedback is turned off. Continue through the line without guidance.
+          </div>
+        </GlassPanel>
+      )}
 
-      {feedback && (
+      {prefs.coachEnabled && feedback && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
           <ClayCard className={`!p-4 ring-1 ${feedback.ok ? "ring-success/30" : "ring-danger/30"}`}>
             <div className="flex items-center gap-2 text-sm font-semibold">

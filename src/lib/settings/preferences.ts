@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 
 export type BoardThemeId = "walnut" | "slate" | "ivory";
 export type PieceSetId = "staunton" | "modern" | "glass";
+export type ThemeMode = "light" | "dark";
+export type SoundPackId =
+  | "default"
+  | "classic-tournament"
+  | "modern-digital"
+  | "premium-luxury";
 
 export type BoardTheme = {
   id: BoardThemeId;
@@ -71,32 +77,50 @@ export const PIECE_SETS: PieceSet[] = [
 export type Preferences = {
   boardTheme: BoardThemeId;
   pieceSet: PieceSetId;
+  theme: ThemeMode;
   soundEnabled: boolean;
   soundVolume: number; // 0..1
-  aiHints: boolean;
+  soundPack: SoundPackId;
+  coachEnabled: boolean;
 };
 
 const DEFAULTS: Preferences = {
   boardTheme: "ivory",
   pieceSet: "staunton",
+  theme: "dark",
   soundEnabled: true,
   soundVolume: 0.6,
-  aiHints: false,
+  soundPack: "default",
+  coachEnabled: true,
 };
 
 const KEY = "chesscoach:prefs:v1";
+
+function inferSystemTheme(): ThemeMode {
+  if (typeof window === "undefined") return DEFAULTS.theme;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
 function read(): Preferences {
   if (typeof window === "undefined") return DEFAULTS;
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (!raw) return DEFAULTS;
-    const parsed = { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Preferences>) };
-    // Migrate legacy "minimalist" id to new "glass".
-    if ((parsed.pieceSet as string) === "minimalist") parsed.pieceSet = "glass";
-    return parsed;
+    if (!raw) return { ...DEFAULTS, theme: inferSystemTheme() };
+    const saved = JSON.parse(raw) as Partial<Preferences> & {
+      aiHints?: boolean;
+      pieceSet?: string;
+    };
+    const preferences: Preferences = {
+      ...DEFAULTS,
+      ...saved,
+      theme: saved.theme ?? inferSystemTheme(),
+      soundPack: saved.soundPack ?? DEFAULTS.soundPack,
+      coachEnabled: saved.coachEnabled ?? saved.aiHints ?? DEFAULTS.coachEnabled,
+    };
+    if (preferences.pieceSet === "minimalist") preferences.pieceSet = "glass";
+    return preferences;
   } catch {
-    return DEFAULTS;
+    return { ...DEFAULTS, theme: inferSystemTheme() };
   }
 }
 

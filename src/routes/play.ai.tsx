@@ -177,8 +177,12 @@ function PlayAI() {
       setLastMove({ from: mv.from, to: mv.to });
       playMoveSfx(mv);
       setArrows([]);
-      setCoachLoading(true);
       setReport(null);
+      setCoachLoading(prefs.coachEnabled);
+      if (!prefs.coachEnabled) {
+        setEvalCp(0);
+        return true;
+      }
       const history = chess.history({ verbose: true }).map((h) => ({
         from: h.from, to: h.to, san: h.san, piece: h.piece,
       }));
@@ -201,7 +205,7 @@ function PlayAI() {
               else mistakeBuckets.current.tactics++;
             } else mistakeBuckets.current.endgame++;
           }
-          if (prefs.aiHints && r.bestMove && r.cpl > 30) {
+          if (r.bestMove && r.cpl > 30) {
             setArrows([{
               startSquare: r.bestMove.slice(0, 2),
               endSquare: r.bestMove.slice(2, 4),
@@ -213,7 +217,7 @@ function PlayAI() {
         .finally(() => setCoachLoading(false));
       return true;
     },
-    [chess, started, userColor, prefs.aiHints],
+    [chess, started, userColor, prefs.coachEnabled],
   );
 
   if (!started) {
@@ -265,24 +269,24 @@ function PlayAI() {
 
               <button
                 type="button"
-                onClick={() => { setPrefs({ aiHints: !prefs.aiHints }); playSfx("click"); }}
+                onClick={() => { setPrefs({ coachEnabled: !prefs.coachEnabled }); playSfx("click"); }}
                 className="flex w-full items-center justify-between rounded-2xl bg-white/3 px-4 py-3.5 text-left ring-1 ring-white/8 transition-colors hover:bg-white/5"
-                aria-pressed={prefs.aiHints}
+                aria-pressed={prefs.coachEnabled}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${prefs.aiHints ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
-                    {prefs.aiHints ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${prefs.coachEnabled ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
+                    {prefs.coachEnabled ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold">Real-Time Move Hints</p>
-                    <p className="text-xs text-muted-foreground">{prefs.aiHints ? "On — best moves shown after slips." : "Off — pure play."}</p>
+                    <p className="text-sm font-semibold">Coach feedback</p>
+                    <p className="text-xs text-muted-foreground">{prefs.coachEnabled ? "On — coaching features enabled." : "Off — pure play mode."}</p>
                   </div>
                 </div>
-                <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${prefs.aiHints ? "bg-gold" : "bg-white/15"}`}>
+                <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${prefs.coachEnabled ? "bg-gold" : "bg-white/15"}`}>
                   <motion.span
                     layout
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow ${prefs.aiHints ? "right-0.5" : "left-0.5"}`}
+                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow ${prefs.coachEnabled ? "right-0.5" : "left-0.5"}`}
                   />
                 </span>
               </button>
@@ -334,17 +338,17 @@ function PlayAI() {
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <button
                 type="button"
-                onClick={() => { setPrefs({ aiHints: !prefs.aiHints }); playSfx("click"); }}
-                aria-pressed={prefs.aiHints}
-                aria-label="Toggle real-time move hints"
+                onClick={() => { setPrefs({ coachEnabled: !prefs.coachEnabled }); playSfx("click"); }}
+                aria-pressed={prefs.coachEnabled}
+                aria-label="Toggle coach feedback"
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ring-1 transition-colors ${
-                  prefs.aiHints
+                  prefs.coachEnabled
                     ? "bg-gold/15 text-gold ring-gold/30"
                     : "bg-white/5 text-muted-foreground ring-white/10 hover:text-foreground"
                 }`}
               >
-                {prefs.aiHints ? <Lightbulb className="h-3.5 w-3.5" /> : <LightbulbOff className="h-3.5 w-3.5" />}
-                Hints {prefs.aiHints ? "on" : "off"}
+                {prefs.coachEnabled ? <Lightbulb className="h-3.5 w-3.5" /> : <LightbulbOff className="h-3.5 w-3.5" />}
+                Coach {prefs.coachEnabled ? "on" : "off"}
               </button>
               <span className="hidden rounded-full bg-white/5 px-3 py-1 sm:inline">
                 Stockfish · {tier.label}
@@ -375,7 +379,7 @@ function PlayAI() {
             report={report}
             loading={coachLoading}
             thinking={engineThinking || coachLoading}
-            emptyHint="Make your first move — I'll analyze it instantly."
+            emptyHint={prefs.coachEnabled ? "Make your first move — I'll analyze it instantly." : "Coach feedback is turned off. Enjoy pure play."}
           />
         }
       />
