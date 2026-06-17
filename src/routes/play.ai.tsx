@@ -381,9 +381,11 @@ function PlayAI() {
       />
       <ResultModal
         open={resultOpen}
+        variant={resultVariant}
         title={result || "Game over"}
         subtitle={`vs Stockfish · ${tier.label}`}
-        cplAvg={cplHistory.current.length ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length) : undefined}
+        cplAvg={cplHistory.current.length ? cplAvg : undefined}
+        insight={insight}
         onPlayAgain={() => start()}
         onExportPGN={() => {
           const pgn = buildPGN({
