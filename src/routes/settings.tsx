@@ -102,11 +102,10 @@ function SettingsRoute() {
               >
                 <ClayCard className="!p-4">
                   <div
-                    className="flex items-center justify-center gap-1 rounded-xl bg-white/[0.04] py-4 text-3xl"
-                    style={{ filter: p.filter }}
+                    className="flex items-center justify-center rounded-xl bg-white/[0.025] px-2 py-3 ring-1 ring-white/5"
                     aria-hidden
                   >
-                    <span>♔</span><span>♕</span><span>♖</span><span>♗</span><span>♘</span><span>♙</span>
+                    <PieceSetPreview id={p.id} />
                   </div>
                   <div className="mt-3 flex items-start justify-between gap-2">
                     <div>
