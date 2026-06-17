@@ -363,6 +363,7 @@ function PlayAI() {
               onMove={onMove}
               lastMove={lastMove}
               arrows={arrows}
+              highlights={checkHighlight}
             />
             <div className="hidden sm:block">
               <EvalBar cp={evalCp} orientation={side} />
