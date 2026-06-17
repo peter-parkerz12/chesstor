@@ -13,6 +13,7 @@ import { useGameMode } from "@/components/nav/island-context";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
 import { saveGame } from "@/lib/db/idb";
 import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
+import { findKingSquare } from "@/lib/chess/squares";
 
 export const Route = createFileRoute("/play/local")({
   head: () => ({
