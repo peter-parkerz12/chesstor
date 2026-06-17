@@ -159,6 +159,7 @@ function PassAndPlay() {
       />
       <ResultModal
         open={resultOpen}
+        variant={resultVariant}
         title={resultText || "Game over"}
         subtitle="Pass & Play"
         onPlayAgain={reset}
