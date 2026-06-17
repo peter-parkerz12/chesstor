@@ -13,6 +13,7 @@ import { useGameMode } from "@/components/nav/island-context";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
 import { saveGame } from "@/lib/db/idb";
 import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
+import { findKingSquare } from "@/lib/chess/squares";
 
 export const Route = createFileRoute("/play/local")({
   head: () => ({
@@ -81,6 +82,10 @@ function PassAndPlay() {
   const orientation = chess.turn() === "w" ? "white" : "black";
   const isWhite = chess.turn() === "w";
   const turnLabel = isWhite ? "White to move" : "Black to move";
+  const inCheck = chess.inCheck();
+  const checkSq = inCheck ? findKingSquare(chess, chess.turn()) : null;
+  const checkHighlight = checkSq ? { [checkSq]: "check" as const } : {};
+  const resultVariant: "win" | "loss" | "draw" = chess.isCheckmate() ? "win" : "draw";
   const resultText = chess.isCheckmate()
     ? `${chess.turn() === "w" ? "Black" : "White"} wins`
     : chess.isDraw() ? "Draw" : "";
@@ -109,7 +114,7 @@ function PassAndPlay() {
           </div>
         }
         board={
-          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} />
+          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} highlights={checkHighlight} />
         }
         side={
           <div className="flex flex-col gap-4">
@@ -154,6 +159,7 @@ function PassAndPlay() {
       />
       <ResultModal
         open={resultOpen}
+        variant={resultVariant}
         title={resultText || "Game over"}
         subtitle="Pass & Play"
         onPlayAgain={reset}

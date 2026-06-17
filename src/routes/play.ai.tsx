@@ -25,6 +25,7 @@ import { saveGame } from "@/lib/db/idb";
 import { useGameMode } from "@/components/nav/island-context";
 import { usePreferences } from "@/lib/settings/preferences";
 import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
+import { findKingSquare } from "@/lib/chess/squares";
 
 export const Route = createFileRoute("/play/ai")({
   head: () => ({
@@ -296,9 +297,31 @@ function PlayAI() {
     );
   }
 
+  const inCheck = chess.inCheck();
+  const checkSq = inCheck ? findKingSquare(chess, chess.turn()) : null;
+  const checkHighlight = checkSq ? { [checkSq]: "check" as const } : {};
+
+  const resultVariant: "win" | "loss" | "draw" = chess.isCheckmate()
+    ? (chess.turn() === userColor ? "loss" : "win")
+    : "draw";
   const result = chess.isCheckmate()
     ? (chess.turn() === userColor ? "You lost" : "You won!")
     : chess.isDraw() ? "Draw" : "";
+
+  const cplAvg = cplHistory.current.length
+    ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length)
+    : 0;
+  const buckets = mistakeBuckets.current;
+  const topBucket = Object.entries(buckets).sort((a, b) => b[1] - a[1])[0];
+  const insight =
+    resultVariant === "win"
+      ? cplAvg < 25 ? "Clean, accurate play from start to finish." : "Strong result — keep an eye on accuracy in critical moments."
+      : resultVariant === "loss"
+        ? topBucket && topBucket[1] > 0
+          ? `Most slips happened in ${topBucket[0].replace(/([A-Z])/g, " $1").toLowerCase()}. Review those moments to grow fastest.`
+          : "Close game — analyze the turning point to learn from it."
+        : "A balanced fight. Replay the late middlegame to find the winning idea.";
+
 
   return (
     <>
@@ -340,6 +363,7 @@ function PlayAI() {
               onMove={onMove}
               lastMove={lastMove}
               arrows={arrows}
+              highlights={checkHighlight}
             />
             <div className="hidden sm:block">
               <EvalBar cp={evalCp} orientation={side} />
@@ -357,9 +381,11 @@ function PlayAI() {
       />
       <ResultModal
         open={resultOpen}
+        variant={resultVariant}
         title={result || "Game over"}
         subtitle={`vs Stockfish · ${tier.label}`}
-        cplAvg={cplHistory.current.length ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length) : undefined}
+        cplAvg={cplHistory.current.length ? cplAvg : undefined}
+        insight={insight}
         onPlayAgain={() => start()}
         onExportPGN={() => {
           const pgn = buildPGN({

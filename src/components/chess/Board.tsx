@@ -10,7 +10,7 @@ type Props = {
   onMove?: (from: string, to: string) => boolean;
   arrows?: Arrow[];
   lastMove?: { from: string; to: string } | null;
-  highlights?: Record<string, "best" | "mistake" | "blunder" | "good" | "selected">;
+  highlights?: Record<string, "best" | "mistake" | "blunder" | "good" | "selected" | "check">;
   draggable?: boolean;
 };
 
@@ -20,6 +20,11 @@ const HIGHLIGHT_STYLES: Record<string, React.CSSProperties> = {
   mistake:  { background: "radial-gradient(circle, oklch(0.78 0.16 55 / 0.45) 60%, transparent 70%)" },
   blunder:  { background: "radial-gradient(circle, oklch(0.72 0.2 25 / 0.5) 60%, transparent 70%)" },
   selected: { background: "oklch(0.82 0.13 80 / 0.25)" },
+  check:    {
+    background: "radial-gradient(circle, oklch(0.72 0.2 25 / 0.55) 55%, transparent 72%)",
+    boxShadow: "inset 0 0 0 2px oklch(0.72 0.2 25 / 0.6)",
+    animation: "check-pulse 900ms cubic-bezier(0.22, 1, 0.36, 1) 1",
+  },
 };
 
 export function Board({
