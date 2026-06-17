@@ -79,9 +79,10 @@ export function Board({
           showAnimations: true,
           animationDurationInMs: 220,
           arrows,
+          pieces: getPieceRenderer(pieceSet.id),
           darkSquareStyle: { backgroundColor: theme.dark },
           lightSquareStyle: { backgroundColor: theme.light },
-          dropSquareStyle: { boxShadow: "inset 0 0 0 3px oklch(0.82 0.13 80 / 0.85)" },
+          dropSquareStyle: { boxShadow: "inset 0 0 0 3px oklch(0.82 0.1 80 / 0.85)" },
           squareStyles,
           boardStyle: {
             borderRadius: 16,
