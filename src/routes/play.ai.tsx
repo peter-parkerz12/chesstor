@@ -25,6 +25,7 @@ import { saveGame } from "@/lib/db/idb";
 import { useGameMode } from "@/components/nav/island-context";
 import { usePreferences } from "@/lib/settings/preferences";
 import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
+import { findKingSquare } from "@/lib/chess/squares";
 
 export const Route = createFileRoute("/play/ai")({
   head: () => ({
