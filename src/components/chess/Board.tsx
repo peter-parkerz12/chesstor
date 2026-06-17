@@ -3,6 +3,7 @@ import { Chessboard } from "react-chessboard";
 import type { Arrow } from "react-chessboard";
 
 import { usePreferences, getBoardTheme, getPieceSet } from "@/lib/settings/preferences";
+import { getPieceRenderer } from "@/lib/chess/pieceSets";
 
 type Props = {
   fen: string;
