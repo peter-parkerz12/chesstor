@@ -17,6 +17,7 @@ import {
   usePreferences,
 } from "@/lib/settings/preferences";
 import { playSfx } from "@/lib/audio/sfx";
+import { PieceSetPreview } from "@/lib/chess/pieceSets";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
