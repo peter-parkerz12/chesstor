@@ -10,7 +10,7 @@ type Props = {
   onMove?: (from: string, to: string) => boolean;
   arrows?: Arrow[];
   lastMove?: { from: string; to: string } | null;
-  highlights?: Record<string, "best" | "mistake" | "blunder" | "good" | "selected">;
+  highlights?: Record<string, "best" | "mistake" | "blunder" | "good" | "selected" | "check">;
   draggable?: boolean;
 };
 
