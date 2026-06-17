@@ -114,7 +114,7 @@ function PassAndPlay() {
           </div>
         }
         board={
-          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} />
+          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} highlights={checkHighlight} />
         }
         side={
           <div className="flex flex-col gap-4">
