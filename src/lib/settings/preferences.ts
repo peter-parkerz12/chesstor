@@ -78,6 +78,9 @@ export type Preferences = {
   soundVolume: number; // 0..1
   soundPack: SoundPackId;
   coachEnabled: boolean;
+  moveHints: boolean;
+  animations: boolean;
+  offlineMode: boolean;
 };
 
 const DEFAULTS: Preferences = {
@@ -88,6 +91,9 @@ const DEFAULTS: Preferences = {
   soundVolume: 0.6,
   soundPack: "default",
   coachEnabled: true,
+  moveHints: true,
+  animations: true,
+  offlineMode: true,
 };
 
 const KEY = "chesscoach:prefs:v1";
@@ -139,7 +145,7 @@ function read(): Preferences {
         typeof saved.soundEnabled === "boolean" ? saved.soundEnabled : DEFAULTS.soundEnabled,
       coachEnabled: saved.coachEnabled ?? saved.aiHints ?? DEFAULTS.coachEnabled,
     };
-    if (preferences.pieceSet === "minimalist") preferences.pieceSet = "glass";
+    if ((preferences.pieceSet as string) === "minimalist") preferences.pieceSet = "glass";
     return preferences;
   } catch {
     return { ...DEFAULTS, theme: inferSystemTheme() };
@@ -159,6 +165,12 @@ function write(p: Preferences) {
 
 export function getPreferences(): Preferences {
   return read();
+}
+
+export function resetPreferences(): Preferences {
+  const next: Preferences = { ...DEFAULTS, theme: inferSystemTheme() };
+  write(next);
+  return next;
 }
 
 export function getBoardTheme(id?: BoardThemeId): BoardTheme {

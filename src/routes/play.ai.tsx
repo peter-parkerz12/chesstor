@@ -9,6 +9,7 @@ import { EvalBar } from "@/components/chess/EvalBar";
 import { FeedbackPanel } from "@/components/chess/FeedbackPanel";
 import { GameLayout } from "@/components/chess/GameLayout";
 import { ResultModal } from "@/components/chess/ResultModal";
+import { ResignButton } from "@/components/chess/ResignButton";
 import { ClayCard } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +64,7 @@ function PlayAI() {
     [],
   );
   const [resultOpen, setResultOpen] = useState(false);
+  const [resigned, setResigned] = useState(false);
 
   const cplHistory = useRef<number[]>([]);
   const phaseCpl = useRef({
@@ -83,6 +85,7 @@ function PlayAI() {
     setLastMove(null);
     setArrows([]);
     setResultOpen(false);
+    setResigned(false);
     setEvalCp(0);
     cplHistory.current = [];
     phaseCpl.current = { opening: [], middlegame: [], endgame: [] };
@@ -103,9 +106,11 @@ function PlayAI() {
     setEvalCp(0);
   }, [prefs.coachEnabled]);
 
-  const finishGame = useCallback(async () => {
+  const finishGame = useCallback(async (forcedResign = false) => {
     let result: "win" | "loss" | "draw" | "unfinished" = "unfinished";
-    if (chess.isCheckmate()) {
+    if (forcedResign) {
+      result = "loss";
+    } else if (chess.isCheckmate()) {
       const loser = chess.turn();
       result = loser === userColor ? "loss" : "win";
     } else if (
@@ -160,9 +165,16 @@ function PlayAI() {
     setResultOpen(true);
   }, [chess, difficulty, side, tier, userColor]);
 
+  const resign = useCallback(() => {
+    if (!started || resultOpen) return;
+    setResigned(true);
+    setEngineThinking(false);
+    void finishGame(true);
+  }, [started, resultOpen, finishGame]);
+
   // Engine plays when it's its turn.
   useEffect(() => {
-    if (!started) return;
+    if (!started || resigned || resultOpen) return;
     if (chess.isGameOver()) {
       finishGame();
       return;
@@ -198,11 +210,11 @@ function PlayAI() {
       setEngineThinking(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, started]);
+  }, [fen, started, resigned, resultOpen]);
 
   const onMove = useCallback(
     (from: string, to: string) => {
-      if (!started) return false;
+      if (!started || resigned || resultOpen) return false;
       if (chess.turn() !== userColor) return false;
       const fenBefore = chess.fen();
       let mv;
@@ -249,7 +261,7 @@ function PlayAI() {
               else mistakeBuckets.current.tactics++;
             } else mistakeBuckets.current.endgame++;
           }
-          if (r.bestMove && r.cpl > 30) {
+          if (prefs.moveHints && r.bestMove && r.cpl > 30) {
             setArrows([
               {
                 startSquare: r.bestMove.slice(0, 2),
@@ -265,7 +277,7 @@ function PlayAI() {
         });
       return true;
     },
-    [chess, started, userColor, prefs.coachEnabled],
+    [chess, started, resigned, resultOpen, userColor, prefs.coachEnabled, prefs.moveHints],
   );
 
   if (!started) {
@@ -388,26 +400,31 @@ function PlayAI() {
   const checkSq = inCheck ? findKingSquare(chess, chess.turn()) : null;
   const checkHighlight = checkSq ? { [checkSq]: "check" as const } : {};
 
-  const resultVariant: "win" | "loss" | "draw" = chess.isCheckmate()
-    ? chess.turn() === userColor
-      ? "loss"
-      : "win"
-    : "draw";
-  const result = chess.isCheckmate()
-    ? chess.turn() === userColor
-      ? "You lost"
-      : "You won!"
-    : chess.isDraw()
-      ? "Draw"
-      : "";
+  const resultVariant: "win" | "loss" | "draw" = resigned
+    ? "loss"
+    : chess.isCheckmate()
+      ? chess.turn() === userColor
+        ? "loss"
+        : "win"
+      : "draw";
+  const result = resigned
+    ? "You resigned"
+    : chess.isCheckmate()
+      ? chess.turn() === userColor
+        ? "You lost"
+        : "You won!"
+      : chess.isDraw()
+        ? "Draw"
+        : "";
 
   const cplAvg = cplHistory.current.length
     ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length)
     : 0;
   const buckets = mistakeBuckets.current;
   const topBucket = Object.entries(buckets).sort((a, b) => b[1] - a[1])[0];
-  const insight =
-    resultVariant === "win"
+  const insight = resigned
+    ? "You ended the game early. Review the position to see what you missed before resigning."
+    : resultVariant === "win"
       ? cplAvg < 25
         ? "Clean, accurate play from start to finish."
         : "Strong result — keep an eye on accuracy in critical moments."
@@ -428,7 +445,7 @@ function PlayAI() {
             >
               <ArrowLeft className="h-4 w-4" /> Home
             </Link>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <button
                 type="button"
                 onClick={() => {
@@ -437,7 +454,7 @@ function PlayAI() {
                 }}
                 aria-pressed={prefs.coachEnabled}
                 aria-label="Toggle coach feedback"
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ring-1 transition-colors ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 ring-1 transition-colors sm:px-3 ${
                   prefs.coachEnabled
                     ? "bg-gold/15 text-gold ring-gold/30"
                     : "bg-white/5 text-muted-foreground ring-white/10 hover:text-foreground"
@@ -448,11 +465,12 @@ function PlayAI() {
                 ) : (
                   <LightbulbOff className="h-3.5 w-3.5" />
                 )}
-                Coach {prefs.coachEnabled ? "on" : "off"}
+                <span className="hidden sm:inline">Coach {prefs.coachEnabled ? "on" : "off"}</span>
               </button>
-              <span className="hidden rounded-full bg-white/5 px-3 py-1 sm:inline">
+              <span className="hidden shrink-0 rounded-full bg-white/5 px-3 py-1 md:inline">
                 Stockfish · {tier.label}
               </span>
+              <ResignButton onResign={resign} />
               <Button
                 size="sm"
                 variant="ghost"
@@ -461,7 +479,8 @@ function PlayAI() {
                   reset();
                 }}
               >
-                <RotateCcw className="h-4 w-4" /> New
+                <RotateCcw className="h-4 w-4" />
+                <span className="hidden sm:inline">New</span>
               </Button>
             </div>
           </div>
