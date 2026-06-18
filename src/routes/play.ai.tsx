@@ -173,7 +173,7 @@ function PlayAI() {
 
   // Engine plays when it's its turn.
   useEffect(() => {
-    if (!started) return;
+    if (!started || resigned || resultOpen) return;
     if (chess.isGameOver()) {
       finishGame();
       return;
