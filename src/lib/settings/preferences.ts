@@ -167,6 +167,12 @@ export function getPreferences(): Preferences {
   return read();
 }
 
+export function resetPreferences(): Preferences {
+  const next: Preferences = { ...DEFAULTS, theme: inferSystemTheme() };
+  write(next);
+  return next;
+}
+
 export function getBoardTheme(id?: BoardThemeId): BoardTheme {
   const target = id ?? read().boardTheme;
   return BOARD_THEMES.find((t) => t.id === target) ?? BOARD_THEMES[0];
