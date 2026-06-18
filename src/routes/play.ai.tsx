@@ -209,7 +209,7 @@ function PlayAI() {
       setEngineThinking(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, started]);
+  }, [fen, started, resigned, resultOpen]);
 
   const onMove = useCallback(
     (from: string, to: string) => {
