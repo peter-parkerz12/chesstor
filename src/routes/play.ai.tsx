@@ -105,9 +105,11 @@ function PlayAI() {
     setEvalCp(0);
   }, [prefs.coachEnabled]);
 
-  const finishGame = useCallback(async () => {
+  const finishGame = useCallback(async (forcedResign = false) => {
     let result: "win" | "loss" | "draw" | "unfinished" = "unfinished";
-    if (chess.isCheckmate()) {
+    if (forcedResign) {
+      result = "loss";
+    } else if (chess.isCheckmate()) {
       const loser = chess.turn();
       result = loser === userColor ? "loss" : "win";
     } else if (
@@ -161,6 +163,13 @@ function PlayAI() {
     });
     setResultOpen(true);
   }, [chess, difficulty, side, tier, userColor]);
+
+  const resign = useCallback(() => {
+    if (!started || resultOpen) return;
+    setResigned(true);
+    setEngineThinking(false);
+    void finishGame(true);
+  }, [started, resultOpen, finishGame]);
 
   // Engine plays when it's its turn.
   useEffect(() => {
