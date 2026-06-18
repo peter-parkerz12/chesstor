@@ -213,7 +213,7 @@ function PlayAI() {
 
   const onMove = useCallback(
     (from: string, to: string) => {
-      if (!started) return false;
+      if (!started || resigned || resultOpen) return false;
       if (chess.turn() !== userColor) return false;
       const fenBefore = chess.fen();
       let mv;
