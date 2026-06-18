@@ -78,6 +78,9 @@ export type Preferences = {
   soundVolume: number; // 0..1
   soundPack: SoundPackId;
   coachEnabled: boolean;
+  moveHints: boolean;
+  animations: boolean;
+  offlineMode: boolean;
 };
 
 const DEFAULTS: Preferences = {
@@ -88,6 +91,9 @@ const DEFAULTS: Preferences = {
   soundVolume: 0.6,
   soundPack: "default",
   coachEnabled: true,
+  moveHints: true,
+  animations: true,
+  offlineMode: true,
 };
 
 const KEY = "chesscoach:prefs:v1";
