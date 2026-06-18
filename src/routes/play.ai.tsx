@@ -9,6 +9,7 @@ import { EvalBar } from "@/components/chess/EvalBar";
 import { FeedbackPanel } from "@/components/chess/FeedbackPanel";
 import { GameLayout } from "@/components/chess/GameLayout";
 import { ResultModal } from "@/components/chess/ResultModal";
+import { ResignButton } from "@/components/chess/ResignButton";
 import { ClayCard } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
 import {
