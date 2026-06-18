@@ -139,7 +139,7 @@ function read(): Preferences {
         typeof saved.soundEnabled === "boolean" ? saved.soundEnabled : DEFAULTS.soundEnabled,
       coachEnabled: saved.coachEnabled ?? saved.aiHints ?? DEFAULTS.coachEnabled,
     };
-    if (preferences.pieceSet === "minimalist") preferences.pieceSet = "glass";
+    if ((preferences.pieceSet as string) === "minimalist") preferences.pieceSet = "glass";
     return preferences;
   } catch {
     return { ...DEFAULTS, theme: inferSystemTheme() };
