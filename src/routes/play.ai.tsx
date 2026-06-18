@@ -276,7 +276,7 @@ function PlayAI() {
         });
       return true;
     },
-    [chess, started, userColor, prefs.coachEnabled],
+    [chess, started, resigned, resultOpen, userColor, prefs.coachEnabled, prefs.moveHints],
   );
 
   if (!started) {
