@@ -399,26 +399,31 @@ function PlayAI() {
   const checkSq = inCheck ? findKingSquare(chess, chess.turn()) : null;
   const checkHighlight = checkSq ? { [checkSq]: "check" as const } : {};
 
-  const resultVariant: "win" | "loss" | "draw" = chess.isCheckmate()
-    ? chess.turn() === userColor
-      ? "loss"
-      : "win"
-    : "draw";
-  const result = chess.isCheckmate()
-    ? chess.turn() === userColor
-      ? "You lost"
-      : "You won!"
-    : chess.isDraw()
-      ? "Draw"
-      : "";
+  const resultVariant: "win" | "loss" | "draw" = resigned
+    ? "loss"
+    : chess.isCheckmate()
+      ? chess.turn() === userColor
+        ? "loss"
+        : "win"
+      : "draw";
+  const result = resigned
+    ? "You resigned"
+    : chess.isCheckmate()
+      ? chess.turn() === userColor
+        ? "You lost"
+        : "You won!"
+      : chess.isDraw()
+        ? "Draw"
+        : "";
 
   const cplAvg = cplHistory.current.length
     ? Math.round(cplHistory.current.reduce((a, b) => a + b, 0) / cplHistory.current.length)
     : 0;
   const buckets = mistakeBuckets.current;
   const topBucket = Object.entries(buckets).sort((a, b) => b[1] - a[1])[0];
-  const insight =
-    resultVariant === "win"
+  const insight = resigned
+    ? "You ended the game early. Review the position to see what you missed before resigning."
+    : resultVariant === "win"
       ? cplAvg < 25
         ? "Clean, accurate play from start to finish."
         : "Strong result — keep an eye on accuracy in critical moments."
