@@ -444,7 +444,7 @@ function PlayAI() {
             >
               <ArrowLeft className="h-4 w-4" /> Home
             </Link>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <button
                 type="button"
                 onClick={() => {
@@ -453,7 +453,7 @@ function PlayAI() {
                 }}
                 aria-pressed={prefs.coachEnabled}
                 aria-label="Toggle coach feedback"
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ring-1 transition-colors ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 ring-1 transition-colors sm:px-3 ${
                   prefs.coachEnabled
                     ? "bg-gold/15 text-gold ring-gold/30"
                     : "bg-white/5 text-muted-foreground ring-white/10 hover:text-foreground"
@@ -464,11 +464,12 @@ function PlayAI() {
                 ) : (
                   <LightbulbOff className="h-3.5 w-3.5" />
                 )}
-                Coach {prefs.coachEnabled ? "on" : "off"}
+                <span className="hidden sm:inline">Coach {prefs.coachEnabled ? "on" : "off"}</span>
               </button>
-              <span className="hidden rounded-full bg-white/5 px-3 py-1 sm:inline">
+              <span className="hidden shrink-0 rounded-full bg-white/5 px-3 py-1 md:inline">
                 Stockfish · {tier.label}
               </span>
+              <ResignButton onResign={resign} />
               <Button
                 size="sm"
                 variant="ghost"
@@ -477,7 +478,8 @@ function PlayAI() {
                   reset();
                 }}
               >
-                <RotateCcw className="h-4 w-4" /> New
+                <RotateCcw className="h-4 w-4" />
+                <span className="hidden sm:inline">New</span>
               </Button>
             </div>
           </div>
