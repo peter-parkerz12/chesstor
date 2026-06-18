@@ -125,12 +125,9 @@ export function ResultModal({
             </Button>
           )}
           {onAnalyze && (
-            <Button
-              onClick={onAnalyze}
-              className="bg-gold text-primary-foreground hover:bg-gold/90 shadow-[0_0_15px_rgba(226,185,111,0.2)]"
-            >
+            <Button variant="outline" onClick={onAnalyze}>
               <BookOpen className="h-4 w-4" aria-hidden="true" />
-              Review Game
+              {variant === "loss" ? "Analyze mistakes" : "Analyze game"}
             </Button>
           )}
           {onExportPGN && (

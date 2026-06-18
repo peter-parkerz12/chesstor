@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { motion } from "framer-motion";
-import { ArrowLeft, RotateCcw, Lightbulb, LightbulbOff, BookOpen, Play } from "lucide-react";
+import { ArrowLeft, RotateCcw, Lightbulb, LightbulbOff } from "lucide-react";
 
 import { Board } from "@/components/chess/Board";
 import { EvalBar } from "@/components/chess/EvalBar";
@@ -19,13 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-  DrawerTitle,
-  DrawerHeader,
-} from "@/components/ui/drawer";
 import { DIFFICULTY_TIERS, getOpponentEngine, type DifficultyId } from "@/lib/engine/stockfish";
 import { analyzeMove, type CoachReport } from "@/lib/coach/feedback";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
@@ -34,8 +27,6 @@ import { useGameMode } from "@/components/nav/island-context";
 import { usePreferences } from "@/lib/settings/preferences";
 import { playMoveSfx, playSfx } from "@/lib/audio/sfx";
 import { findKingSquare } from "@/lib/chess/squares";
-import { MoveNotationPanel } from "@/components/chess/MoveNotationPanel";
-import { GameReview } from "@/components/chess/GameReview";
 
 export const Route = createFileRoute("/play/ai")({
   head: () => ({
@@ -74,9 +65,6 @@ function PlayAI() {
   );
   const [resultOpen, setResultOpen] = useState(false);
   const [resigned, setResigned] = useState(false);
-  const [selectedMoveIndex, setSelectedMoveIndex] = useState(-1);
-  const [isReviewing, setIsReviewing] = useState(false);
-  const [reviewMoves, setReviewMoves] = useState<string[]>([]);
 
   const cplHistory = useRef<number[]>([]);
   const phaseCpl = useRef({
@@ -90,31 +78,6 @@ function PlayAI() {
   const tier = useMemo(() => DIFFICULTY_TIERS.find((t) => t.id === difficulty)!, [difficulty]);
   const userColor: "w" | "b" = side === "white" ? "w" : "b";
 
-  const gameFens = useMemo(() => {
-    const t = new Chess();
-    const fens = [t.fen()];
-    for (const h of chess.history()) {
-      t.move(h);
-      fens.push(t.fen());
-    }
-    return fens;
-  }, [fen, chess]);
-
-  const displayFen = useMemo(() => {
-    const idx = selectedMoveIndex + 1;
-    if (idx >= 0 && idx < gameFens.length) return gameFens[idx];
-    return fen;
-  }, [selectedMoveIndex, gameFens, fen]);
-
-  const displayLastMove = useMemo(() => {
-    const historyVerbose = chess.history({ verbose: true });
-    if (selectedMoveIndex >= 0 && selectedMoveIndex < historyVerbose.length) {
-      const m = historyVerbose[selectedMoveIndex];
-      return { from: m.from, to: m.to };
-    }
-    return lastMove;
-  }, [selectedMoveIndex, chess, lastMove]);
-
   const reset = useCallback(() => {
     chess.reset();
     setFen(chess.fen());
@@ -124,7 +87,6 @@ function PlayAI() {
     setResultOpen(false);
     setResigned(false);
     setEvalCp(0);
-    setSelectedMoveIndex(-1);
     cplHistory.current = [];
     phaseCpl.current = { opening: [], middlegame: [], endgame: [] };
     mistakeBuckets.current = { development: 0, tactics: 0, kingSafety: 0, endgame: 0 };
@@ -200,7 +162,6 @@ function PlayAI() {
       mistakeBuckets: { ...mistakeBuckets.current },
       date: Date.now(),
     });
-    setReviewMoves(chess.history());
     setResultOpen(true);
   }, [chess, difficulty, side, tier, userColor]);
 
@@ -236,7 +197,6 @@ function PlayAI() {
         if (mv) {
           setFen(chess.fen());
           setLastMove({ from: mv.from, to: mv.to });
-          setSelectedMoveIndex(chess.history().length - 1);
           playMoveSfx(mv);
         }
       } catch {
@@ -266,7 +226,6 @@ function PlayAI() {
       if (!mv) return false;
       setFen(chess.fen());
       setLastMove({ from: mv.from, to: mv.to });
-      setSelectedMoveIndex(chess.history().length - 1);
       playMoveSfx(mv);
       setArrows([]);
       setReport(null);
@@ -475,30 +434,9 @@ function PlayAI() {
           : "Close game — analyze the turning point to learn from it."
         : "A balanced fight. Replay the late middlegame to find the winning idea.";
 
-  if (isReviewing && reviewMoves.length > 0) {
-    return (
-      <GameReview
-        moves={reviewMoves}
-        side={side}
-        difficulty={difficulty}
-        onClose={() => {
-          setIsReviewing(false);
-          setReviewMoves([]);
-          reset();
-        }}
-      />
-    );
-  }
-
-  const isLiveLatest = selectedMoveIndex === chess.history().length - 1 || chess.history().length === 0;
-
-  const evalBarSpace = prefs.coachEnabled ? "var(--eval-bar-space, 0px)" : "0px";
-  const boardMaxWidth = `calc(min(74vh, 100%) + ${evalBarSpace})`;
-
   return (
-    <div style={{ "--eval-bar-space": "0px" } as React.CSSProperties} className="w-full sm:[--eval-bar-space:28px]">
+    <>
       <GameLayout
-        boardMaxWidth={boardMaxWidth}
         topBar={
           <div className="flex items-center justify-between gap-3">
             <Link
@@ -548,99 +486,37 @@ function PlayAI() {
           </div>
         }
         board={
-          <div className="flex flex-col gap-4 w-full">
-            <div className="relative flex w-full gap-3 min-w-0">
-              <div className="relative flex-1">
-                <Board
-                  fen={displayFen}
-                  orientation={side}
-                  onMove={onMove}
-                  lastMove={displayLastMove}
-                  arrows={arrows}
-                  highlights={checkHighlight}
-                  draggable={isLiveLatest}
-                />
-                {/* Resume Live Game banner */}
-                {!isLiveLatest && chess.history().length > 0 && (
-                  <div className="absolute inset-x-0 top-4 z-10 flex justify-center animate-bounce">
-                    <button
-                      onClick={() => setSelectedMoveIndex(chess.history().length - 1)}
-                      className="flex items-center gap-1.5 rounded-full bg-gold px-4 py-2 text-xs font-bold text-primary-foreground shadow-lg hover:bg-gold/90 transition-all border border-gold/20"
-                    >
-                      <Play className="h-3.5 w-3.5 fill-current" />
-                      Resume Live Game
-                    </button>
-                  </div>
-                )}
+          <div className="flex gap-3">
+            <Board
+              fen={fen}
+              orientation={side}
+              onMove={onMove}
+              lastMove={lastMove}
+              arrows={arrows}
+              highlights={checkHighlight}
+            />
+            {prefs.coachEnabled && (
+              <div className="hidden sm:block">
+                <EvalBar cp={evalCp} orientation={side} />
               </div>
-              {prefs.coachEnabled && (
-                <div className="hidden sm:block">
-                  <EvalBar cp={evalCp} orientation={side} />
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Notation Drawer Button */}
-            <div className="flex md:hidden justify-center">
-              <Drawer>
-                <DrawerTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9 gap-1.5 rounded-2xl border-white/8 bg-white/3 text-xs font-semibold text-foreground/80 hover:text-foreground"
-                  >
-                    <BookOpen className="h-3.5 w-3.5" />
-                    View Move List ({chess.history().length})
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="p-4 bg-background border-white/10">
-                  <DrawerHeader className="pb-2 text-left">
-                    <DrawerTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                      Live Game Notation
-                    </DrawerTitle>
-                  </DrawerHeader>
-                  <div className="mt-2">
-                    <MoveNotationPanel
-                      moves={chess.history()}
-                      selectedMoveIndex={selectedMoveIndex}
-                      onSelectMove={(idx) => {
-                        setSelectedMoveIndex(idx);
-                      }}
-                      liveGame={true}
-                      className="border-0 bg-transparent p-0 shadow-none"
-                    />
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            </div>
+            )}
           </div>
         }
         side={
-          <div className="flex flex-col gap-4">
-            {/* Desktop Notation Panel */}
-            <div className="hidden md:block">
-              <MoveNotationPanel
-                moves={chess.history()}
-                selectedMoveIndex={selectedMoveIndex}
-                onSelectMove={setSelectedMoveIndex}
-                liveGame={true}
-              />
-            </div>
-            {prefs.coachEnabled ? (
-              <FeedbackPanel
-                report={report}
-                loading={coachLoading}
-                thinking={engineThinking || coachLoading}
-                emptyHint={
-                  prefs.coachEnabled
-                    ? "Make your first move — I'll analyze it instantly."
-                    : "Coach feedback is turned off. Enjoy pure play."
-                }
-              />
-            ) : (
-              <div className="hidden lg:block" aria-hidden="true" />
-            )}
-          </div>
+          prefs.coachEnabled ? (
+            <FeedbackPanel
+              report={report}
+              loading={coachLoading}
+              thinking={engineThinking || coachLoading}
+              emptyHint={
+                prefs.coachEnabled
+                  ? "Make your first move — I'll analyze it instantly."
+                  : "Coach feedback is turned off. Enjoy pure play."
+              }
+            />
+          ) : (
+            <div className="hidden lg:block" aria-hidden="true" />
+          )
         }
       />
       <ResultModal
@@ -666,11 +542,7 @@ function PlayAI() {
           });
           downloadPGN(pgn, `chesscoach-${Date.now()}.pgn`);
         }}
-        onAnalyze={() => {
-          setResultOpen(false);
-          setIsReviewing(true);
-        }}
       />
-    </div>
+    </>
   );
 }

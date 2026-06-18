@@ -4,10 +4,9 @@ type Props = {
   board: ReactNode;
   side: ReactNode;
   topBar?: ReactNode;
-  boardMaxWidth?: string;
 };
 
-export function GameLayout({ board, side, topBar, boardMaxWidth = "min(74vh, 100%)" }: Props) {
+export function GameLayout({ board, side, topBar }: Props) {
   return (
     <div className="pb-nav mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pt-4 sm:px-5 lg:px-8 lg:pt-8">
       {topBar}
@@ -15,7 +14,7 @@ export function GameLayout({ board, side, topBar, boardMaxWidth = "min(74vh, 100
         <div className="flex min-w-0 items-start justify-center">
           <div
             className="w-full"
-            style={{ maxWidth: boardMaxWidth }}
+            style={{ maxWidth: "min(74vh, 100%)" }}
           >
             {board}
           </div>
@@ -25,4 +24,3 @@ export function GameLayout({ board, side, topBar, boardMaxWidth = "min(74vh, 100
     </div>
   );
 }
-
