@@ -260,7 +260,7 @@ function PlayAI() {
               else mistakeBuckets.current.tactics++;
             } else mistakeBuckets.current.endgame++;
           }
-          if (r.bestMove && r.cpl > 30) {
+          if (prefs.moveHints && r.bestMove && r.cpl > 30) {
             setArrows([
               {
                 startSquare: r.bestMove.slice(0, 2),
