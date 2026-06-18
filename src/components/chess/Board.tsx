@@ -11,13 +11,21 @@ type Props = {
   onMove?: (from: string, to: string) => boolean;
   arrows?: Arrow[];
   lastMove?: { from: string; to: string } | null;
-  highlights?: Record<string, "best" | "mistake" | "blunder" | "good" | "selected" | "check">;
+  highlights?: Record<string, "best" | "mistake" | "blunder" | "good" | "selected" | "check" | "brilliant" | "great">;
   draggable?: boolean;
 };
 
 const HIGHLIGHT_STYLES: Record<string, React.CSSProperties> = {
-  best:     { background: "radial-gradient(circle, oklch(0.82 0.13 80 / 0.55) 60%, transparent 70%)" },
-  good:     { background: "radial-gradient(circle, oklch(0.82 0.18 145 / 0.45) 60%, transparent 70%)" },
+  brilliant: {
+    background: "radial-gradient(circle, oklch(0.75 0.14 195 / 0.45) 60%, transparent 70%)",
+    boxShadow: "inset 0 0 0 2px oklch(0.75 0.14 195 / 0.7)",
+  },
+  great: {
+    background: "radial-gradient(circle, oklch(0.82 0.13 80 / 0.45) 60%, transparent 70%)",
+    boxShadow: "inset 0 0 0 2px oklch(0.82 0.13 80 / 0.7)",
+  },
+  best:     { background: "radial-gradient(circle, oklch(0.82 0.18 145 / 0.45) 60%, transparent 70%)" },
+  good:     { background: "radial-gradient(circle, oklch(0.82 0.12 195 / 0.25) 60%, transparent 70%)" },
   mistake:  { background: "radial-gradient(circle, oklch(0.78 0.16 55 / 0.45) 60%, transparent 70%)" },
   blunder:  { background: "radial-gradient(circle, oklch(0.72 0.2 25 / 0.5) 60%, transparent 70%)" },
   selected: { background: "oklch(0.82 0.13 80 / 0.25)" },
@@ -70,7 +78,7 @@ export function Board({
   }
 
   return (
-    <div className="board-frame" data-piece-set={pieceSet.id}>
+    <div className="board-frame w-full aspect-square" data-piece-set={pieceSet.id}>
       <Chessboard
         options={{
           position: fen,
