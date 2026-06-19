@@ -425,29 +425,7 @@ function PositionTrainer({
             )}
           </GlassPanel>
 
-          {solved && (
-            <NextPositionButton currentId={position.id} onPick={(id) => {
-              // Same-route swap via onBack + setActive replaced — easier: navigate via state lift.
-              // We trigger onBack and rely on parent to reopen; here we just reload position.
-              const next = PRACTICE_POSITIONS.find((p) => p.id === id);
-              if (!next) return;
-              // Hard reset by mutating refs:
-              chess.load(next.fen);
-              setFen(next.fen);
-              setSolved(false);
-              setFeedback(null);
-              setHintLevel(0);
-              setLastMove(null);
-              // Replace position by reload — parent doesn't know. Use window navigation hack:
-              // Simplest: rely on internal — we just visually swapped position fields are stale.
-              // Real swap: call onBack then user re-enters. For UX, just call onBack with a flash.
-              onBack();
-              window.setTimeout(() => {
-                // re-open via custom event
-                window.dispatchEvent(new CustomEvent("chesscoach:practice:open", { detail: id }));
-              }, 50);
-            }} />
-          )}
+          {solved && <NextPositionButton currentId={position.id} onPick={onSwitch} />}
         </div>
       </div>
     </div>
