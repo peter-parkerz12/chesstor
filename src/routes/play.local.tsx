@@ -164,15 +164,22 @@ function PassAndPlay() {
         : `${ending.winner === "white" ? "White" : "Black"} wins`
     : "";
 
-  const moves = useMemo(() => {
-    const h = chess.history();
-    const pairs: Array<{ n: number; white?: string; black?: string }> = [];
-    for (let i = 0; i < h.length; i += 2) {
-      pairs.push({ n: i / 2 + 1, white: h[i], black: h[i + 1] });
+  // Compute displayed (possibly historical) FEN + last move.
+  const view = useMemo(() => {
+    if (reviewPly === null || history.length === 0) {
+      return { fen, lastMove, draggable: !resultOpen };
     }
-    return pairs;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, chess]);
+    const c = new Chess();
+    let last: { from: string; to: string } | null = null;
+    for (let i = 0; i <= reviewPly && i < history.length; i++) {
+      const mv = c.move(history[i]);
+      if (mv) last = { from: mv.from, to: mv.to };
+    }
+    return { fen: c.fen(), lastMove: last, draggable: false };
+  }, [reviewPly, history, fen, lastMove, resultOpen]);
+
+  const livePly = history.length - 1;
+  const currentPly = reviewPly ?? livePly;
 
   return (
     <>
