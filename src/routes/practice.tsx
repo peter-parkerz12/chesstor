@@ -72,8 +72,10 @@ function PracticePage() {
   if (activePosition) {
     return (
       <PositionTrainer
+        key={activePosition.id}
         position={activePosition}
         onBack={() => setActiveId(null)}
+        onSwitch={(id) => setActiveId(id)}
         onSolved={() => setStatsTick((n) => n + 1)}
       />
     );
