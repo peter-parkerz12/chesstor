@@ -66,6 +66,8 @@ function PlayAI() {
   );
   const [resultOpen, setResultOpen] = useState(false);
   const [resigned, setResigned] = useState(false);
+  const [reviewPly, setReviewPly] = useState<number | null>(null); // null = live
+  const [history, setHistory] = useState<string[]>([]);
 
   const cplHistory = useRef<number[]>([]);
   const phaseCpl = useRef({
