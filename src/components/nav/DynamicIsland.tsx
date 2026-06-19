@@ -1,12 +1,12 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
-import { BarChart3, BookOpen, Home, Settings, Swords, Users } from "lucide-react";
+import { BarChart3, BookOpen, Home, Settings, Swords, Target, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useIsland } from "./island-context";
 
 type Mode = {
-  to: "/" | "/play/ai" | "/play/local" | "/openings" | "/stats" | "/settings";
+  to: "/" | "/play/ai" | "/play/local" | "/openings" | "/practice" | "/stats" | "/settings";
   label: string;
   short: string;
   icon: typeof Home;
@@ -17,6 +17,7 @@ const MODES: Mode[] = [
   { to: "/play/ai", label: "Play vs AI", short: "Play AI", icon: Swords },
   { to: "/play/local", label: "Pass & Play", short: "Pass & Play", icon: Users },
   { to: "/openings", label: "Openings", short: "Openings", icon: BookOpen },
+  { to: "/practice", label: "Practice", short: "Practice", icon: Target },
   { to: "/stats", label: "Progress", short: "Stats", icon: BarChart3 },
   { to: "/settings", label: "Settings", short: "Settings", icon: Settings },
 ];
