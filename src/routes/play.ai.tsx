@@ -553,12 +553,13 @@ function PlayAI() {
         board={
           <div className="flex gap-3">
             <Board
-              fen={fen}
+              fen={view.fen}
               orientation={side}
               onMove={onMove}
-              lastMove={lastMove}
-              arrows={arrows}
-              highlights={checkHighlight}
+              lastMove={view.lastMove}
+              arrows={reviewPly === null ? arrows : []}
+              highlights={reviewPly === null ? checkHighlight : {}}
+              draggable={view.draggable}
             />
             {prefs.coachEnabled && (
               <div className="hidden sm:block">
@@ -568,20 +569,29 @@ function PlayAI() {
           </div>
         }
         side={
-          prefs.coachEnabled ? (
-            <FeedbackPanel
-              report={report}
-              loading={coachLoading}
-              thinking={engineThinking || coachLoading}
-              emptyHint={
-                prefs.coachEnabled
-                  ? "Make your first move — I'll analyze it instantly."
-                  : "Coach feedback is turned off. Enjoy pure play."
-              }
+          <div className="flex flex-col gap-4">
+            {prefs.coachEnabled && (
+              <FeedbackPanel
+                report={report}
+                loading={coachLoading}
+                thinking={engineThinking || coachLoading}
+                emptyHint={
+                  prefs.coachEnabled
+                    ? "Make your first move — I'll analyze it instantly."
+                    : "Coach feedback is turned off. Enjoy pure play."
+                }
+              />
+            )}
+            <MoveList
+              history={history}
+              currentPly={currentPly}
+              reviewing={reviewPly !== null}
+              onJump={jumpTo}
+              onReturnLive={returnLive}
+              onUndo={undoMove}
+              canUndo={canUndo}
             />
-          ) : (
-            <div className="hidden lg:block" aria-hidden="true" />
-          )
+          </div>
         }
       />
       <ResultModal
