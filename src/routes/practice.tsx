@@ -208,10 +208,12 @@ function PositionTrainer({
   position,
   onBack,
   onSolved,
+  onSwitch,
 }: {
   position: PracticePosition;
   onBack: () => void;
   onSolved: () => void;
+  onSwitch: (id: string) => void;
 }) {
   const [chess] = useState(() => new Chess(position.fen));
   const [fen, setFen] = useState(position.fen);
