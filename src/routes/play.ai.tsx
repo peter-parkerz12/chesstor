@@ -8,6 +8,7 @@ import { Board } from "@/components/chess/Board";
 import { EvalBar } from "@/components/chess/EvalBar";
 import { FeedbackPanel } from "@/components/chess/FeedbackPanel";
 import { GameLayout } from "@/components/chess/GameLayout";
+import { MoveList } from "@/components/chess/MoveList";
 import { ResultModal } from "@/components/chess/ResultModal";
 import { ResignButton } from "@/components/chess/ResignButton";
 import { ClayCard } from "@/components/ui/surfaces";
