@@ -6,9 +6,10 @@ import { motion } from "framer-motion";
 
 import { Board } from "@/components/chess/Board";
 import { GameLayout } from "@/components/chess/GameLayout";
+import { MoveList } from "@/components/chess/MoveList";
 import { ResultModal } from "@/components/chess/ResultModal";
 import { ResignButton } from "@/components/chess/ResignButton";
-import { ClayCard, GlassPanel } from "@/components/ui/surfaces";
+import { ClayCard } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
 import { useGameMode } from "@/components/nav/island-context";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
@@ -37,6 +38,8 @@ function PassAndPlay() {
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [ending, setEnding] = useState<Ending>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [reviewPly, setReviewPly] = useState<number | null>(null);
   const [, force] = useState(0);
   const moveCount = useRef(0);
 
@@ -46,6 +49,8 @@ function PassAndPlay() {
     setLastMove(null);
     setResultOpen(false);
     setEnding(null);
+    setHistory([]);
+    setReviewPly(null);
     moveCount.current = 0;
     force((n) => n + 1);
   }, [chess]);
@@ -85,6 +90,7 @@ function PassAndPlay() {
   const onMove = useCallback(
     (from: string, to: string) => {
       if (resultOpen) return false;
+      if (reviewPly !== null) return false;
       let mv;
       try {
         mv = chess.move({ from, to, promotion: "q" });
@@ -94,6 +100,7 @@ function PassAndPlay() {
       if (!mv) return false;
       setFen(chess.fen());
       setLastMove({ from: mv.from, to: mv.to });
+      setHistory(chess.history());
       playMoveSfx(mv);
       moveCount.current += 1;
       force((n) => n + 1);
@@ -107,7 +114,30 @@ function PassAndPlay() {
       }
       return true;
     },
-    [chess, resultOpen, persistAndOpen],
+    [chess, resultOpen, reviewPly, persistAndOpen],
+  );
+
+  const undoMove = useCallback(() => {
+    if (resultOpen) return;
+    setReviewPly(null);
+    if (chess.history().length === 0) return;
+    chess.undo();
+    setFen(chess.fen());
+    const verbose = chess.history({ verbose: true });
+    const last = verbose[verbose.length - 1];
+    setLastMove(last ? { from: last.from, to: last.to } : null);
+    setHistory(chess.history());
+    moveCount.current = Math.max(0, moveCount.current - 1);
+    force((n) => n + 1);
+    playSfx("click");
+  }, [chess, resultOpen]);
+
+  const jumpTo = useCallback(
+    (ply: number) => {
+      const live = chess.history().length - 1;
+      setReviewPly(ply >= live ? null : ply);
+    },
+    [chess],
   );
 
   const resign = useCallback(() => {
@@ -134,15 +164,22 @@ function PassAndPlay() {
         : `${ending.winner === "white" ? "White" : "Black"} wins`
     : "";
 
-  const moves = useMemo(() => {
-    const h = chess.history();
-    const pairs: Array<{ n: number; white?: string; black?: string }> = [];
-    for (let i = 0; i < h.length; i += 2) {
-      pairs.push({ n: i / 2 + 1, white: h[i], black: h[i + 1] });
+  // Compute displayed (possibly historical) FEN + last move.
+  const view = useMemo(() => {
+    if (reviewPly === null || history.length === 0) {
+      return { fen, lastMove, draggable: !resultOpen };
     }
-    return pairs;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, chess]);
+    const c = new Chess();
+    let last: { from: string; to: string } | null = null;
+    for (let i = 0; i <= reviewPly && i < history.length; i++) {
+      const mv = c.move(history[i]);
+      if (mv) last = { from: mv.from, to: mv.to };
+    }
+    return { fen: c.fen(), lastMove: last, draggable: false };
+  }, [reviewPly, history, fen, lastMove, resultOpen]);
+
+  const livePly = history.length - 1;
+  const currentPly = reviewPly ?? livePly;
 
   return (
     <>
@@ -165,7 +202,14 @@ function PassAndPlay() {
           </div>
         }
         board={
-          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} highlights={checkHighlight} />
+          <Board
+            fen={view.fen}
+            orientation={orientation}
+            onMove={onMove}
+            lastMove={view.lastMove}
+            highlights={reviewPly === null ? checkHighlight : {}}
+            draggable={view.draggable}
+          />
         }
         side={
           <div className="flex flex-col gap-4">
@@ -189,22 +233,15 @@ function PassAndPlay() {
               </p>
             </ClayCard>
 
-            <GlassPanel>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Moves</h4>
-              {moves.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">No moves yet.</p>
-              ) : (
-                <ol className="mt-3 max-h-64 space-y-1 overflow-y-auto pr-1 text-sm no-scrollbar">
-                  {moves.map((p) => (
-                    <li key={p.n} className="grid grid-cols-[2rem_1fr_1fr] gap-2 font-mono">
-                      <span className="text-muted-foreground">{p.n}.</span>
-                      <span>{p.white ?? ""}</span>
-                      <span className="text-muted-foreground">{p.black ?? ""}</span>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </GlassPanel>
+            <MoveList
+              history={history}
+              currentPly={currentPly}
+              reviewing={reviewPly !== null}
+              onJump={jumpTo}
+              onReturnLive={() => setReviewPly(null)}
+              onUndo={undoMove}
+              canUndo={!resultOpen && history.length > 0}
+            />
           </div>
         }
       />
