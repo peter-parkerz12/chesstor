@@ -259,6 +259,7 @@ function PlayAI() {
   const onMove = useCallback(
     (from: string, to: string) => {
       if (!started || resigned || resultOpen) return false;
+      if (reviewPly !== null) return false; // Disallow moves while reviewing.
       if (chess.turn() !== userColor) return false;
       const fenBefore = chess.fen();
       let mv;
@@ -270,6 +271,7 @@ function PlayAI() {
       if (!mv) return false;
       setFen(chess.fen());
       setLastMove({ from: mv.from, to: mv.to });
+      setHistory(chess.history());
       playMoveSfx(mv);
       setArrows([]);
       setReport(null);
@@ -279,7 +281,7 @@ function PlayAI() {
         return true;
       }
       const requestId = ++analysisSeq.current;
-      const history = chess.history({ verbose: true }).map((h) => ({
+      const verboseHistory = chess.history({ verbose: true }).map((h) => ({
         from: h.from,
         to: h.to,
         san: h.san,
@@ -289,7 +291,7 @@ function PlayAI() {
         fenBefore,
         fenAfter: chess.fen(),
         playedSAN: mv.san,
-        history,
+        history: verboseHistory,
         side: userColor,
       })
         .then((r) => {
@@ -321,8 +323,27 @@ function PlayAI() {
         });
       return true;
     },
-    [chess, started, resigned, resultOpen, userColor, prefs.coachEnabled, prefs.moveHints],
+    [chess, started, resigned, resultOpen, reviewPly, userColor, prefs.coachEnabled, prefs.moveHints],
   );
+
+  // Compute displayed (possibly historical) FEN + last move.
+  const view = useMemo(() => {
+    if (reviewPly === null || history.length === 0) {
+      return { fen, lastMove, draggable: true };
+    }
+    const c = new Chess();
+    let last: { from: string; to: string } | null = null;
+    for (let i = 0; i <= reviewPly && i < history.length; i++) {
+      const mv = c.move(history[i]);
+      if (mv) last = { from: mv.from, to: mv.to };
+    }
+    return { fen: c.fen(), lastMove: last, draggable: false };
+  }, [reviewPly, history, fen, lastMove]);
+
+  const livePly = history.length - 1;
+  const currentPly = reviewPly ?? livePly;
+  const canUndo =
+    started && !resigned && !resultOpen && !engineThinking && history.length > 0;
 
   if (!started) {
     return (
