@@ -38,6 +38,8 @@ function PassAndPlay() {
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [ending, setEnding] = useState<Ending>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [reviewPly, setReviewPly] = useState<number | null>(null);
   const [, force] = useState(0);
   const moveCount = useRef(0);
 
@@ -47,6 +49,8 @@ function PassAndPlay() {
     setLastMove(null);
     setResultOpen(false);
     setEnding(null);
+    setHistory([]);
+    setReviewPly(null);
     moveCount.current = 0;
     force((n) => n + 1);
   }, [chess]);
