@@ -6,9 +6,10 @@ import { motion } from "framer-motion";
 
 import { Board } from "@/components/chess/Board";
 import { GameLayout } from "@/components/chess/GameLayout";
+import { MoveList } from "@/components/chess/MoveList";
 import { ResultModal } from "@/components/chess/ResultModal";
 import { ResignButton } from "@/components/chess/ResignButton";
-import { ClayCard, GlassPanel } from "@/components/ui/surfaces";
+import { ClayCard } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
 import { useGameMode } from "@/components/nav/island-context";
 import { buildPGN, downloadPGN } from "@/lib/pgn";
