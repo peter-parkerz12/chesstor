@@ -202,6 +202,7 @@ function PlayAI() {
         if (mv) {
           setFen(chess.fen());
           setLastMove({ from: mv.from, to: mv.to });
+          setHistory(chess.history());
           playMoveSfx(mv);
         }
       } catch {
@@ -216,6 +217,44 @@ function PlayAI() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fen, started, resigned, resultOpen]);
+
+  const undoMove = useCallback(() => {
+    if (!started || resigned || resultOpen || engineThinking) return;
+    // Always return to live before undoing.
+    setReviewPly(null);
+    const verbose = chess.history({ verbose: true });
+    if (verbose.length === 0) return;
+    // Undo engine move + user move so it's the user's turn again.
+    const undoCount = verbose[verbose.length - 1].color === userColor ? 1 : 2;
+    for (let i = 0; i < undoCount; i++) chess.undo();
+    setFen(chess.fen());
+    const newVerbose = chess.history({ verbose: true });
+    const last = newVerbose[newVerbose.length - 1];
+    setLastMove(last ? { from: last.from, to: last.to } : null);
+    setHistory(chess.history());
+    setReport(null);
+    setArrows([]);
+    setEvalCp(0);
+    setCoachLoading(false);
+    // Pop one CPL entry (the user's most recent move).
+    if (cplHistory.current.length) cplHistory.current.pop();
+    analysisSeq.current += 1;
+    playSfx("click");
+  }, [chess, engineThinking, resigned, resultOpen, started, userColor]);
+
+  const jumpTo = useCallback(
+    (ply: number) => {
+      const live = chess.history().length - 1;
+      if (ply >= live) {
+        setReviewPly(null);
+      } else {
+        setReviewPly(ply);
+      }
+    },
+    [chess],
+  );
+
+  const returnLive = useCallback(() => setReviewPly(null), []);
 
   const onMove = useCallback(
     (from: string, to: string) => {
