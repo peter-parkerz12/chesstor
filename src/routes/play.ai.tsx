@@ -89,6 +89,8 @@ function PlayAI() {
     setArrows([]);
     setResultOpen(false);
     setResigned(false);
+    setReviewPly(null);
+    setHistory([]);
     setEvalCp(0);
     cplHistory.current = [];
     phaseCpl.current = { opening: [], middlegame: [], endgame: [] };
