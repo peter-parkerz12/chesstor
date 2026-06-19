@@ -90,6 +90,7 @@ function PassAndPlay() {
   const onMove = useCallback(
     (from: string, to: string) => {
       if (resultOpen) return false;
+      if (reviewPly !== null) return false;
       let mv;
       try {
         mv = chess.move({ from, to, promotion: "q" });
@@ -99,6 +100,7 @@ function PassAndPlay() {
       if (!mv) return false;
       setFen(chess.fen());
       setLastMove({ from: mv.from, to: mv.to });
+      setHistory(chess.history());
       playMoveSfx(mv);
       moveCount.current += 1;
       force((n) => n + 1);
@@ -112,7 +114,30 @@ function PassAndPlay() {
       }
       return true;
     },
-    [chess, resultOpen, persistAndOpen],
+    [chess, resultOpen, reviewPly, persistAndOpen],
+  );
+
+  const undoMove = useCallback(() => {
+    if (resultOpen) return;
+    setReviewPly(null);
+    if (chess.history().length === 0) return;
+    chess.undo();
+    setFen(chess.fen());
+    const verbose = chess.history({ verbose: true });
+    const last = verbose[verbose.length - 1];
+    setLastMove(last ? { from: last.from, to: last.to } : null);
+    setHistory(chess.history());
+    moveCount.current = Math.max(0, moveCount.current - 1);
+    force((n) => n + 1);
+    playSfx("click");
+  }, [chess, resultOpen]);
+
+  const jumpTo = useCallback(
+    (ply: number) => {
+      const live = chess.history().length - 1;
+      setReviewPly(ply >= live ? null : ply);
+    },
+    [chess],
   );
 
   const resign = useCallback(() => {
