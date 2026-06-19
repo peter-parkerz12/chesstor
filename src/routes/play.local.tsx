@@ -202,7 +202,14 @@ function PassAndPlay() {
           </div>
         }
         board={
-          <Board fen={fen} orientation={orientation} onMove={onMove} lastMove={lastMove} highlights={checkHighlight} />
+          <Board
+            fen={view.fen}
+            orientation={orientation}
+            onMove={onMove}
+            lastMove={view.lastMove}
+            highlights={reviewPly === null ? checkHighlight : {}}
+            draggable={view.draggable}
+          />
         }
         side={
           <div className="flex flex-col gap-4">
@@ -226,22 +233,15 @@ function PassAndPlay() {
               </p>
             </ClayCard>
 
-            <GlassPanel>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Moves</h4>
-              {moves.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">No moves yet.</p>
-              ) : (
-                <ol className="mt-3 max-h-64 space-y-1 overflow-y-auto pr-1 text-sm no-scrollbar">
-                  {moves.map((p) => (
-                    <li key={p.n} className="grid grid-cols-[2rem_1fr_1fr] gap-2 font-mono">
-                      <span className="text-muted-foreground">{p.n}.</span>
-                      <span>{p.white ?? ""}</span>
-                      <span className="text-muted-foreground">{p.black ?? ""}</span>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </GlassPanel>
+            <MoveList
+              history={history}
+              currentPly={currentPly}
+              reviewing={reviewPly !== null}
+              onJump={jumpTo}
+              onReturnLive={() => setReviewPly(null)}
+              onUndo={undoMove}
+              canUndo={!resultOpen && history.length > 0}
+            />
           </div>
         }
       />
