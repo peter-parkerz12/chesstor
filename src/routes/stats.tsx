@@ -143,13 +143,13 @@ function Stats() {
 
 function StatCard({ icon: Icon, label, value, hint, accent }: { icon: typeof Trophy; label: string; value: string; hint?: string; accent?: boolean }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32 }}>
       <ClayCard className={`!p-5 ${accent ? "glow-gold" : ""}`}>
-        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
-          <Icon className="h-4 w-4" />
+        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent ? "bg-gold/15 text-gold" : "bg-white/[0.04] text-muted-foreground"}`}>
+          <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
         </div>
-        <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-bold">{value}</p>
+        <p className="mt-4 text-eyebrow">{label}</p>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight tabular-nums">{value}</p>
         {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
       </ClayCard>
     </motion.div>
@@ -160,20 +160,21 @@ function PhaseScore({ label, value }: { label: string; value: number | null }) {
   return (
     <GlassPanel>
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-foreground">{label}</h4>
-        <span className="font-mono text-lg font-bold text-gold">{value !== null ? `${value}%` : "—"}</span>
+        <h4 className="text-[13px] font-semibold text-foreground">{label}</h4>
+        <span className="font-mono text-lg font-semibold tabular-nums text-gold">{value !== null ? `${value}%` : "—"}</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/5">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
         <motion.div
           className="h-full bg-gradient-to-r from-gold to-success"
           initial={{ width: 0 }}
           animate={{ width: value !== null ? `${value}%` : "0%" }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         />
       </div>
     </GlassPanel>
   );
 }
+
 
 function prettyBucket(b: string): string {
   switch (b) {
