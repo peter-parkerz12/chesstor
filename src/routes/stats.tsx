@@ -66,11 +66,12 @@ function Stats() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 pt-10 pb-nav lg:px-8 lg:pt-16">
-      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Home
+      <Link to="/" className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" strokeWidth={1.75} /> Home
       </Link>
-      <h1 className="text-3xl font-bold sm:text-4xl">Your progress</h1>
-      <p className="mt-2 text-sm text-muted-foreground">All your data stays on this device.</p>
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your progress</h1>
+      <p className="mt-2 text-[14px] text-muted-foreground">All your data stays on this device.</p>
+
 
       {agg.total === 0 ? (
         <ClayCard className="mt-10 text-center">
