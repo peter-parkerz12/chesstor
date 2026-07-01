@@ -172,12 +172,23 @@
     font-family: var(--font-display);
     letter-spacing: -0.022em;
     font-feature-settings: "ss01", "cv11";
+    font-weight: 600;
   }
   h1 {
-    letter-spacing: -0.03em;
+    letter-spacing: -0.032em;
+    font-weight: 700;
+  }
+  h2 {
+    letter-spacing: -0.026em;
   }
   p {
-    letter-spacing: -0.005em;
+    letter-spacing: -0.003em;
+    line-height: 1.6;
+  }
+  small,
+  .text-xs,
+  .text-\[11px\] {
+    letter-spacing: 0.005em;
   }
   input,
   select,
@@ -294,6 +305,31 @@
 
 @utility text-gold {
   color: var(--color-gold);
+}
+
+/* Uniform eyebrow label — used above card titles */
+@utility text-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+/* Restrained, premium hover: border + surface lift, no translate */
+@utility card-hover {
+  transition:
+    border-color 200ms var(--ease-out-soft),
+    background-color 200ms var(--ease-out-soft),
+    box-shadow 240ms var(--ease-out-soft);
+}
+.card-hover:hover {
+  border-color: oklch(1 0 0 / 0.1);
+  background-color: oklch(1 0 0 / 0.02);
+}
+.light .card-hover:hover {
+  border-color: oklch(0.15 0.01 45 / 0.18);
+  background-color: oklch(1 0 0 / 0.4);
 }
 
 /* Extremely subtle film grain */

@@ -391,7 +391,7 @@ function PositionTrainer({
           <GlassPanel className="!p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h4 className="text-eyebrow">
                   Progressive hints
                 </h4>
                 <p className="mt-1 text-xs text-muted-foreground/80">

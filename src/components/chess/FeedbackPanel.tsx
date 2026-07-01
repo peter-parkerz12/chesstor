@@ -29,9 +29,9 @@ export function FeedbackPanel({ report, loading, thinking, emptyHint }: Props) {
     <div className="flex flex-col gap-4">
       <ClayCard className="!p-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Coach</h3>
+          <h3 className="text-eyebrow">Coach</h3>
           {thinking && (
-            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
               thinking…
             </span>
@@ -88,9 +88,9 @@ export function FeedbackPanel({ report, loading, thinking, emptyHint }: Props) {
 
       {report && (
         <GlassPanel>
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phase</h4>
-          <p className="mt-1 text-sm capitalize text-foreground/90">{report.phase}</p>
-          <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+          <h4 className="text-eyebrow">Phase</h4>
+          <p className="mt-1.5 text-sm capitalize text-foreground/90">{report.phase}</p>
+          <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">
             {PHASE_HINT[report.phase]}
           </p>
         </GlassPanel>

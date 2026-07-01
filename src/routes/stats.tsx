@@ -66,11 +66,12 @@ function Stats() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 pt-10 pb-nav lg:px-8 lg:pt-16">
-      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Home
+      <Link to="/" className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" strokeWidth={1.75} /> Home
       </Link>
-      <h1 className="text-3xl font-bold sm:text-4xl">Your progress</h1>
-      <p className="mt-2 text-sm text-muted-foreground">All your data stays on this device.</p>
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your progress</h1>
+      <p className="mt-2 text-[14px] text-muted-foreground">All your data stays on this device.</p>
+
 
       {agg.total === 0 ? (
         <ClayCard className="mt-10 text-center">
@@ -104,13 +105,13 @@ function Stats() {
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ClayCard>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Results</h3>
-              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-white/5">
-                <div className="bg-success" style={{ width: `${(agg.wins / agg.total) * 100}%` }} />
+              <h3 className="text-eyebrow">Results</h3>
+              <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-white/[0.05]">
+                <div className="bg-success/90" style={{ width: `${(agg.wins / agg.total) * 100}%` }} />
                 <div className="bg-warning/70" style={{ width: `${(agg.draws / agg.total) * 100}%` }} />
                 <div className="bg-danger/80" style={{ width: `${(agg.losses / agg.total) * 100}%` }} />
               </div>
-              <div className="mt-3 flex justify-between text-xs text-muted-foreground">
+              <div className="mt-3 flex justify-between text-[12px] text-muted-foreground">
                 <span><span className="font-mono text-foreground">{agg.wins}</span> wins</span>
                 <span><span className="font-mono text-foreground">{agg.draws}</span> draws</span>
                 <span><span className="font-mono text-foreground">{agg.losses}</span> losses</span>
@@ -118,20 +119,21 @@ function Stats() {
             </ClayCard>
 
             <ClayCard>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Openings drilled</h3>
+              <h3 className="text-eyebrow">Openings drilled</h3>
               {openings.length === 0 ? (
                 <p className="mt-3 text-sm text-muted-foreground">Try the opening trainer to track per-line accuracy.</p>
               ) : (
-                <ul className="mt-3 space-y-2">
+                <ul className="mt-4 space-y-2.5">
                   {openings.sort((a, b) => b.lastPlayed - a.lastPlayed).slice(0, 6).map((o) => (
-                    <li key={o.id} className="flex items-center justify-between text-sm">
-                      <span>{o.name}</span>
-                      <span className="font-mono text-gold">{Math.round(o.accuracy * 100)}%</span>
+                    <li key={o.id} className="flex items-center justify-between text-[13.5px]">
+                      <span className="truncate pr-3 text-foreground/90">{o.name}</span>
+                      <span className="font-mono text-sm text-gold">{Math.round(o.accuracy * 100)}%</span>
                     </li>
                   ))}
                 </ul>
               )}
             </ClayCard>
+
           </div>
         </>
       )}
@@ -141,13 +143,13 @@ function Stats() {
 
 function StatCard({ icon: Icon, label, value, hint, accent }: { icon: typeof Trophy; label: string; value: string; hint?: string; accent?: boolean }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32 }}>
       <ClayCard className={`!p-5 ${accent ? "glow-gold" : ""}`}>
-        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent ? "bg-gold/15 text-gold" : "bg-white/5 text-muted-foreground"}`}>
-          <Icon className="h-4 w-4" />
+        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent ? "bg-gold/15 text-gold" : "bg-white/[0.04] text-muted-foreground"}`}>
+          <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
         </div>
-        <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-bold">{value}</p>
+        <p className="mt-4 text-eyebrow">{label}</p>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight tabular-nums">{value}</p>
         {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
       </ClayCard>
     </motion.div>
@@ -158,20 +160,21 @@ function PhaseScore({ label, value }: { label: string; value: number | null }) {
   return (
     <GlassPanel>
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-foreground">{label}</h4>
-        <span className="font-mono text-lg font-bold text-gold">{value !== null ? `${value}%` : "—"}</span>
+        <h4 className="text-[13px] font-semibold text-foreground">{label}</h4>
+        <span className="font-mono text-lg font-semibold tabular-nums text-gold">{value !== null ? `${value}%` : "—"}</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/5">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
         <motion.div
           className="h-full bg-gradient-to-r from-gold to-success"
           initial={{ width: 0 }}
           animate={{ width: value !== null ? `${value}%` : "0%" }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         />
       </div>
     </GlassPanel>
   );
 }
+
 
 function prettyBucket(b: string): string {
   switch (b) {
@@ -225,24 +228,24 @@ function SmartRecommendation({
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }} className="mt-6">
-      <ClayCard className="ring-1 ring-gold/20 glow-gold">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="mt-6">
+      <ClayCard className="ring-1 ring-gold/15">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold/15 text-gold">
-              <Sparkles className="h-5 w-5" />
+              <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Coach recommends</p>
-              <h3 className="mt-1 text-lg font-bold">{title}</h3>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{body}</p>
+            <div className="min-w-0">
+              <p className="text-eyebrow">Coach recommends</p>
+              <h3 className="mt-1.5 text-[17px] font-semibold tracking-tight">{title}</h3>
+              <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">{body}</p>
             </div>
           </div>
           <Link
             to={to}
-            className="inline-flex shrink-0 items-center gap-2 self-start rounded-2xl bg-gold px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
+            className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full bg-gold px-4 py-2 text-[13px] font-semibold text-primary-foreground transition-[transform,filter] duration-200 hover:brightness-105 active:scale-[0.98]"
           >
-            {cta} <ArrowRight className="h-4 w-4" />
+            {cta} <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
           </Link>
         </div>
       </ClayCard>
