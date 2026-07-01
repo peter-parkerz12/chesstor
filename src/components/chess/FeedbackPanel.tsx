@@ -88,9 +88,9 @@ export function FeedbackPanel({ report, loading, thinking, emptyHint }: Props) {
 
       {report && (
         <GlassPanel>
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phase</h4>
-          <p className="mt-1 text-sm capitalize text-foreground/90">{report.phase}</p>
-          <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+          <h4 className="text-eyebrow">Phase</h4>
+          <p className="mt-1.5 text-sm capitalize text-foreground/90">{report.phase}</p>
+          <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">
             {PHASE_HINT[report.phase]}
           </p>
         </GlassPanel>
