@@ -214,7 +214,7 @@ function PassAndPlay() {
         side={
           <div className="flex flex-col gap-4">
             <ClayCard className="p-5!">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Turn</h3>
+              <h3 className="text-eyebrow">Turn</h3>
               <div className="mt-3 flex items-center gap-3">
                 <motion.span
                   key={isWhite ? "w" : "b"}

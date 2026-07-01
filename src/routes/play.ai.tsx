@@ -366,7 +366,7 @@ function PlayAI() {
             </p>
             <div className="mt-6 space-y-5">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-eyebrow">
                   Difficulty
                 </label>
                 <Select value={difficulty} onValueChange={(v) => setDifficulty(v as DifficultyId)}>
@@ -383,7 +383,7 @@ function PlayAI() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-eyebrow">
                   Play as
                 </label>
                 <div className="mt-2 grid grid-cols-2 gap-3">

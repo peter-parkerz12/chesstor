@@ -68,7 +68,7 @@ export function MoveList({
     <GlassPanel className="!p-0">
       <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-2">
         <div className="flex min-w-0 items-center gap-2">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h4 className="text-eyebrow">
             Moves
           </h4>
           <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">

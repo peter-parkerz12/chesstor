@@ -305,7 +305,7 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
             transition={{ duration: 0.25 }}
           >
             <GlassPanel>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center gap-2 text-eyebrow">
                 <BookOpen className="h-3.5 w-3.5 text-gold" /> Your move
               </div>
               <p className="mt-2 text-sm text-foreground/90 leading-relaxed">
@@ -387,7 +387,7 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
       {prefs.coachEnabled && (
         <>
           <GlassPanel>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-2 text-eyebrow">
               <Target className="h-3.5 w-3.5 text-gold" /> Middlegame plan
             </div>
             <ul className="mt-3 space-y-2 text-sm leading-relaxed text-foreground/85">
@@ -413,7 +413,7 @@ function OpeningDrill({ opening, onBack }: { opening: Opening; onBack: () => voi
           </GlassPanel>
 
           <GlassPanel>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <h4 className="text-eyebrow">
               Mainline
             </h4>
             <ol className="mt-3 max-h-48 space-y-1 overflow-y-auto pr-1 text-sm no-scrollbar">
