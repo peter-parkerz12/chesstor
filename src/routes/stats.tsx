@@ -105,13 +105,13 @@ function Stats() {
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ClayCard>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Results</h3>
-              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-white/5">
-                <div className="bg-success" style={{ width: `${(agg.wins / agg.total) * 100}%` }} />
+              <h3 className="text-eyebrow">Results</h3>
+              <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-white/[0.05]">
+                <div className="bg-success/90" style={{ width: `${(agg.wins / agg.total) * 100}%` }} />
                 <div className="bg-warning/70" style={{ width: `${(agg.draws / agg.total) * 100}%` }} />
                 <div className="bg-danger/80" style={{ width: `${(agg.losses / agg.total) * 100}%` }} />
               </div>
-              <div className="mt-3 flex justify-between text-xs text-muted-foreground">
+              <div className="mt-3 flex justify-between text-[12px] text-muted-foreground">
                 <span><span className="font-mono text-foreground">{agg.wins}</span> wins</span>
                 <span><span className="font-mono text-foreground">{agg.draws}</span> draws</span>
                 <span><span className="font-mono text-foreground">{agg.losses}</span> losses</span>
@@ -119,20 +119,21 @@ function Stats() {
             </ClayCard>
 
             <ClayCard>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Openings drilled</h3>
+              <h3 className="text-eyebrow">Openings drilled</h3>
               {openings.length === 0 ? (
                 <p className="mt-3 text-sm text-muted-foreground">Try the opening trainer to track per-line accuracy.</p>
               ) : (
-                <ul className="mt-3 space-y-2">
+                <ul className="mt-4 space-y-2.5">
                   {openings.sort((a, b) => b.lastPlayed - a.lastPlayed).slice(0, 6).map((o) => (
-                    <li key={o.id} className="flex items-center justify-between text-sm">
-                      <span>{o.name}</span>
-                      <span className="font-mono text-gold">{Math.round(o.accuracy * 100)}%</span>
+                    <li key={o.id} className="flex items-center justify-between text-[13.5px]">
+                      <span className="truncate pr-3 text-foreground/90">{o.name}</span>
+                      <span className="font-mono text-sm text-gold">{Math.round(o.accuracy * 100)}%</span>
                     </li>
                   ))}
                 </ul>
               )}
             </ClayCard>
+
           </div>
         </>
       )}
