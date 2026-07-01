@@ -228,24 +228,24 @@ function SmartRecommendation({
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }} className="mt-6">
-      <ClayCard className="ring-1 ring-gold/20 glow-gold">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="mt-6">
+      <ClayCard className="ring-1 ring-gold/15">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold/15 text-gold">
-              <Sparkles className="h-5 w-5" />
+              <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Coach recommends</p>
-              <h3 className="mt-1 text-lg font-bold">{title}</h3>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{body}</p>
+            <div className="min-w-0">
+              <p className="text-eyebrow">Coach recommends</p>
+              <h3 className="mt-1.5 text-[17px] font-semibold tracking-tight">{title}</h3>
+              <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">{body}</p>
             </div>
           </div>
           <Link
             to={to}
-            className="inline-flex shrink-0 items-center gap-2 self-start rounded-2xl bg-gold px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
+            className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full bg-gold px-4 py-2 text-[13px] font-semibold text-primary-foreground transition-[transform,filter] duration-200 hover:brightness-105 active:scale-[0.98]"
           >
-            {cta} <ArrowRight className="h-4 w-4" />
+            {cta} <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
           </Link>
         </div>
       </ClayCard>
