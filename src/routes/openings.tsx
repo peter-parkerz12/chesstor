@@ -107,7 +107,7 @@ function OpeningsRoute() {
               }}
               className="group text-left"
             >
-              <ClayCard className="h-full transition-transform group-hover:-translate-y-1">
+              <ClayCard className="card-hover h-full">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-lg font-bold leading-tight">{o.name}</h3>
