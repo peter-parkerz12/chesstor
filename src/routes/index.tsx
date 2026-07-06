@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Swords, Users, BookOpen, BarChart3, Sparkles, Target } from "lucide-react";
+import { Swords, Users, BookOpen, BarChart3, Sparkles, Target, LineChart } from "lucide-react";
 import { ClayCard } from "@/components/ui/surfaces";
 
 export const Route = createFileRoute("/")({
@@ -16,6 +16,7 @@ export const Route = createFileRoute("/")({
 type Mode = { to: string; title: string; desc: string; icon: typeof Swords; accent?: boolean };
 const MODES: Mode[] = [
   { to: "/play/ai", title: "Play vs AI", desc: "Stockfish opponent with 6 difficulty tiers and instant coaching.", icon: Swords, accent: true },
+  { to: "/analyze", title: "Game Analysis", desc: "Upload a PGN and get a full Stockfish review — classifications, graph, and insights.", icon: LineChart },
   { to: "/practice", title: "Midgame & Endgame", desc: "Curated tactics, strategy, and endgame positions with progressive hints.", icon: Target },
   { to: "/play/local", title: "Pass & Play", desc: "Two players, one device. Perfect for the dinner table.", icon: Users },
   { to: "/openings", title: "Opening Trainer", desc: "20 grandmaster openings, taught move by move with plain-English coaching.", icon: BookOpen },
