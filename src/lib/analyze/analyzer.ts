@@ -80,10 +80,12 @@ export async function analyzeGame(
   for (let i = 0; i < positions.length; i++) {
     if (opts.signal?.aborted) throw new Error("Analysis cancelled.");
     const position = new Chess(positions[i]);
-    if (position.isCheckmate()) {
+    if (position.isGameOver()) {
+      if (!position.isCheckmate()) {
+        evals.push({ cp: 0, move: "" });
+      } else {
       evals.push({ cp: position.turn() === "w" ? -10000 : 10000, move: "" });
-    } else if (position.isDraw() || position.isStalemate() || position.isInsufficientMaterial()) {
-      evals.push({ cp: 0, move: "" });
+      }
     } else {
       const r = await engine.analyze(positions[i], { depth, multipv: 2, signal: opts.signal });
       evals.push({
