@@ -56,7 +56,6 @@ function AnalyzePage() {
     abortRef.current = controller;
     try {
       const report = await analyzeGame(parsed, {
-        depth: 12,
         signal: controller.signal,
         onProgress: (progress) =>
           setStage({ name: "analyzing", progress }),

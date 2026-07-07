@@ -18,9 +18,16 @@ export type ParsedGame = {
   result: string;
 };
 
+function normalizePgn(pgnText: string): string {
+  return (pgnText ?? "")
+    .replace(/\b(e\.p\.|ep)\b/gi, "")
+    .replace(/\r\n?/g, "\n")
+    .trim();
+}
+
 /** Parse PGN text into a fully replayed, validated game. Throws on invalid input. */
 export function parsePGN(pgnText: string): ParsedGame {
-  const clean = (pgnText ?? "").trim();
+  const clean = normalizePgn(pgnText);
   if (!clean) throw new Error("PGN is empty. Paste or upload a valid PGN.");
 
   const chess = new Chess();
@@ -34,7 +41,9 @@ export function parsePGN(pgnText: string): ParsedGame {
 
   const headersRaw = (chess.header?.() ?? {}) as Record<string, unknown>;
   const headers: Record<string, string> = {};
-  for (const [k, v] of Object.entries(headersRaw)) headers[k] = String(v);
+  for (const [k, v] of Object.entries(headersRaw)) {
+    if (v !== null && v !== undefined && String(v) !== "?") headers[k] = String(v);
+  }
 
   const verbose = chess.history({ verbose: true }) as Array<{
     san: string;
