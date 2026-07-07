@@ -64,7 +64,7 @@ export async function analyzeGame(
   if (!parsed.moves.length) throw new Error("PGN parsed, but no moves were available to analyze.");
   opts.onProgress?.({ label: "Generating positions…", done: 1, total: 100 });
   const positionCount = parsed.moves.length + 1;
-  const depth = opts.depth ?? (positionCount > 160 ? 9 : positionCount > 90 ? 10 : 12);
+  const depth = opts.depth ?? (positionCount > 160 ? 4 : positionCount > 90 ? 5 : 6);
   const engine = getAnalyzer();
   opts.onProgress?.({ label: "Initializing Stockfish…", done: 4, total: 100 });
   await engine.init();
