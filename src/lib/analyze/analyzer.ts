@@ -21,6 +21,12 @@ export type GameReport = {
   counts: Record<Classification, number>;
 };
 
+export type AnalysisProgress = {
+  label: string;
+  done: number;
+  total: number;
+};
+
 function uciToSan(fenBefore: string, uci: string): string | undefined {
   if (!uci || uci === "(none)") return undefined;
   const c = new Chess(fenBefore);
@@ -52,11 +58,15 @@ export async function analyzeGame(
   opts: {
     depth?: number;
     signal?: AbortSignal;
-    onProgress?: (done: number, total: number) => void;
+    onProgress?: (progress: AnalysisProgress) => void;
   } = {},
 ): Promise<GameReport> {
-  const depth = opts.depth ?? 14;
+  if (!parsed.moves.length) throw new Error("PGN parsed, but no moves were available to analyze.");
+  opts.onProgress?.({ label: "Generating positions…", done: 1, total: 100 });
+  const positionCount = parsed.moves.length + 1;
+  const depth = opts.depth ?? (positionCount > 160 ? 4 : positionCount > 90 ? 5 : 6);
   const engine = getAnalyzer();
+  opts.onProgress?.({ label: "Initializing Stockfish…", done: 4, total: 100 });
   await engine.init();
 
   // Unique positions in order: initial (before first move) + fen after every move.
@@ -69,16 +79,32 @@ export async function analyzeGame(
   const total = positions.length;
   for (let i = 0; i < positions.length; i++) {
     if (opts.signal?.aborted) throw new Error("Analysis cancelled.");
-    const r = await engine.analyze(positions[i], { depth, multipv: 2 });
-    evals.push({
-      cp: r.multipv[0]?.cp ?? 0,
-      second: r.multipv[1]?.cp,
-      move: r.multipv[0]?.move ?? "",
+    const position = new Chess(positions[i]);
+    if (position.isGameOver()) {
+      if (!position.isCheckmate()) {
+        evals.push({ cp: 0, move: "" });
+      } else {
+      evals.push({ cp: position.turn() === "w" ? -10000 : 10000, move: "" });
+      }
+    } else {
+      const r = await engine.analyze(positions[i], { depth, multipv: 2, signal: opts.signal });
+      evals.push({
+        cp: r.multipv[0]?.cp ?? 0,
+        second: r.multipv[1]?.cp,
+        move: r.multipv[0]?.move ?? "",
+      });
+    }
+    const analyzedDone = i + 1;
+    opts.onProgress?.({
+      label: `Analyzing move ${Math.min(analyzedDone, parsed.moves.length)} / ${parsed.moves.length}`,
+      done: 8 + Math.round((analyzedDone / total) * 86),
+      total: 100,
     });
-    opts.onProgress?.(i + 1, total);
     // Yield to the event loop to keep the UI responsive.
     await new Promise((res) => setTimeout(res, 0));
   }
+
+  opts.onProgress?.({ label: "Generating review…", done: 96, total: 100 });
 
   const analyzed: AnalyzedMove[] = parsed.moves.map((m, i) => {
     const evalObj: MoveEval = {
