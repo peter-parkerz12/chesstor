@@ -79,12 +79,19 @@ export async function analyzeGame(
   const total = positions.length;
   for (let i = 0; i < positions.length; i++) {
     if (opts.signal?.aborted) throw new Error("Analysis cancelled.");
-    const r = await engine.analyze(positions[i], { depth, multipv: 2, signal: opts.signal });
-    evals.push({
-      cp: r.multipv[0]?.cp ?? 0,
-      second: r.multipv[1]?.cp,
-      move: r.multipv[0]?.move ?? "",
-    });
+    const position = new Chess(positions[i]);
+    if (position.isCheckmate()) {
+      evals.push({ cp: position.turn() === "w" ? -10000 : 10000, move: "" });
+    } else if (position.isDraw() || position.isStalemate() || position.isInsufficientMaterial()) {
+      evals.push({ cp: 0, move: "" });
+    } else {
+      const r = await engine.analyze(positions[i], { depth, multipv: 2, signal: opts.signal });
+      evals.push({
+        cp: r.multipv[0]?.cp ?? 0,
+        second: r.multipv[1]?.cp,
+        move: r.multipv[0]?.move ?? "",
+      });
+    }
     const analyzedDone = i + 1;
     opts.onProgress?.({
       label: `Analyzing move ${Math.min(analyzedDone, parsed.moves.length)} / ${parsed.moves.length}`,
