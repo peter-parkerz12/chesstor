@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import { parsePGN, type ParsedGame, formatDate } from "@/lib/analyze/pgn";
-import { analyzeGame, type GameReport, type AnalyzedMove } from "@/lib/analyze/analyzer";
+import { analyzeGame, type GameReport, type AnalyzedMove, type AnalysisProgress } from "@/lib/analyze/analyzer";
 import { CLASS_META, explainMove, type Classification } from "@/lib/analyze/classify";
 import { buildReport, type Report } from "@/lib/analyze/report";
 
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/analyze")({
 
 type Stage =
   | { name: "import"; error?: string }
-  | { name: "analyzing"; done: number; total: number }
+  | { name: "analyzing"; progress: AnalysisProgress }
   | { name: "ready"; report: GameReport; insights: Report };
 
 function AnalyzePage() {
@@ -42,6 +42,8 @@ function AnalyzePage() {
   const abortRef = useRef<AbortController | null>(null);
 
   const startAnalysis = useCallback(async (pgnText: string) => {
+    abortRef.current?.abort();
+    setStage({ name: "analyzing", progress: { label: "Parsing PGN…", done: 0, total: 100 } });
     let parsed: ParsedGame;
     try {
       parsed = parsePGN(pgnText);
@@ -49,17 +51,18 @@ function AnalyzePage() {
       setStage({ name: "import", error: e instanceof Error ? e.message : "Could not parse PGN." });
       return;
     }
-    setStage({ name: "analyzing", done: 0, total: parsed.moves.length + 1 });
+    setStage({ name: "analyzing", progress: { label: "Generating positions…", done: 2, total: 100 } });
     const controller = new AbortController();
     abortRef.current = controller;
     try {
       const report = await analyzeGame(parsed, {
-        depth: 14,
+        depth: 12,
         signal: controller.signal,
-        onProgress: (done, total) =>
-          setStage({ name: "analyzing", done, total }),
+        onProgress: (progress) =>
+          setStage({ name: "analyzing", progress }),
       });
       const insights = buildReport(report);
+      setStage({ name: "analyzing", progress: { label: "Complete", done: 100, total: 100 } });
       setStage({ name: "ready", report, insights });
     } catch (e) {
       setStage({
@@ -131,7 +134,7 @@ function AnalyzePage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <AnalyzingView done={stage.done} total={stage.total} />
+            <AnalyzingView progress={stage.progress} />
           </motion.div>
         )}
 
@@ -264,8 +267,8 @@ function ImportView({ error, onSubmit }: { error?: string; onSubmit: (pgn: strin
 
 /* ────────────────────────────  ANALYZING  ──────────────────────────── */
 
-function AnalyzingView({ done, total }: { done: number; total: number }) {
-  const pct = total ? Math.round((done / total) * 100) : 0;
+function AnalyzingView({ progress }: { progress: AnalysisProgress }) {
+  const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
   return (
     <ClayCard className="flex flex-col items-center gap-5 py-14 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/15 text-gold ring-1 ring-gold/25">
@@ -274,13 +277,13 @@ function AnalyzingView({ done, total }: { done: number; total: number }) {
       <div>
         <h3 className="text-lg font-semibold tracking-tight">Analyzing your game</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Stockfish is evaluating every position. This usually takes a few seconds.
+          {progress.label}
         </p>
       </div>
       <div className="w-full max-w-md">
         <Progress value={pct} className="h-2" />
         <p className="mt-2 text-xs tabular-nums text-muted-foreground">
-          {done} / {total} positions · {pct}%
+          {pct}% complete
         </p>
       </div>
     </ClayCard>
