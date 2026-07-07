@@ -74,7 +74,7 @@ class AnalyzerEngine {
         cp = mate > 0 ? 10000 - mate : -10000 - mate;
       } else return;
       this.current.lines.set(mpv, { cp, mate, move: pvM[1] });
-      this.current.depth = parseInt(depthM[1], 10);
+      this.current.depth = parseInt(depthM[1], 10); } else if (line === "uciok") { this.ready = true; this.send("isready"); } else if (line === "readyok") {
     } else if (line.startsWith("bestmove")) {
       const cur = this.current;
       this.current = null;
