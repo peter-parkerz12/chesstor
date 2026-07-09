@@ -8,14 +8,18 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { DynamicIsland } from "@/components/nav/DynamicIsland";
 import { IslandProvider } from "@/components/nav/island-context";
 import { InstallButton } from "@/components/pwa/InstallButton";
+import { ProfileMenu } from "@/components/auth/ProfileMenu";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { registerPWA } from "@/lib/pwa-register";
-import { applyTheme, getPreferences } from "@/lib/settings/preferences";
+import { applyTheme, getPreferences, usePreferences } from "@/lib/settings/preferences";
+import { pullPreferences, setSyncUser, schedulePushPreferences } from "@/lib/settings/sync";
 
 function NotFoundComponent() {
   return (
@@ -157,20 +161,50 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <IslandProvider>
-        <div className="relative min-h-dvh">
-          <div className="pointer-events-none fixed right-3 top-3 z-30 sm:right-5 sm:top-5">
-            <div className="pointer-events-auto">
-              <InstallButton />
+      <AuthProvider>
+        <IslandProvider>
+          <div className="relative min-h-dvh">
+            <div className="pointer-events-none fixed right-3 top-3 z-30 flex items-center gap-2 sm:right-5 sm:top-5">
+              <div className="pointer-events-auto">
+                <InstallButton />
+              </div>
+              <div className="pointer-events-auto">
+                <ProfileMenu />
+              </div>
             </div>
+            <main className="relative z-10">
+              <Outlet />
+            </main>
+            <DynamicIsland />
+            <PrefsSyncBridge />
           </div>
-          <main className="relative z-10">
-            {/* Required: nested routes render here. */}
-            <Outlet />
-          </main>
-          <DynamicIsland />
-        </div>
-      </IslandProvider>
+        </IslandProvider>
+        <Toaster theme="dark" position="top-center" richColors closeButton />
+      </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+/** Wires cloud preference pull on sign-in and push on change. */
+function PrefsSyncBridge() {
+  const { user } = useAuth();
+  const [, update] = usePreferences();
+  useEffect(() => {
+    setSyncUser(user?.id ?? null);
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const remote = await pullPreferences(user.id);
+      if (cancelled) return;
+      if (remote && Object.keys(remote).length > 0) {
+        update(remote);
+      } else {
+        // First-time sync: push current local prefs to cloud.
+        schedulePushPreferences();
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+  return null;
 }
