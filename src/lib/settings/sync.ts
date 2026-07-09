@@ -26,7 +26,7 @@ export function schedulePushPreferences() {
     try {
       await supabase
         .from("user_preferences")
-        .upsert({ user_id: uid, data: getPreferences() as unknown as Record<string, unknown> });
+        .upsert({ user_id: uid, data: getPreferences() as never });
     } catch {
       /* offline — will retry on next change */
     }
