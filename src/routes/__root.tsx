@@ -8,14 +8,18 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { DynamicIsland } from "@/components/nav/DynamicIsland";
 import { IslandProvider } from "@/components/nav/island-context";
 import { InstallButton } from "@/components/pwa/InstallButton";
+import { ProfileMenu } from "@/components/auth/ProfileMenu";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { registerPWA } from "@/lib/pwa-register";
-import { applyTheme, getPreferences } from "@/lib/settings/preferences";
+import { applyTheme, getPreferences, usePreferences } from "@/lib/settings/preferences";
+import { pullPreferences, setSyncUser, schedulePushPreferences } from "@/lib/settings/sync";
 
 function NotFoundComponent() {
   return (
