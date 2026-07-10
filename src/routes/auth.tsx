@@ -59,7 +59,7 @@ function AuthPage() {
       if (!pRes.success) { toast.error(pRes.error.issues[0].message); return; }
 
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: eRes.data,
           password: pRes.data,
           options: {
@@ -68,8 +68,14 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created. You're signed in.");
-        navigate({ to: "/" });
+        if (data.session) {
+          toast.success("Account created. You're signed in.");
+          navigate({ to: "/" });
+        } else {
+          toast.success("Account created. Check your email to confirm, then sign in.");
+          setMode("signin");
+          setPassword("");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: eRes.data,
@@ -204,7 +210,7 @@ function AuthPage() {
           {mode === "signin" && (
             <>
               New here?{" "}
-              <button className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signup")}>
+              <button type="button" className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signup")}>
                 Create an account
               </button>
             </>
@@ -212,13 +218,13 @@ function AuthPage() {
           {mode === "signup" && (
             <>
               Already have an account?{" "}
-              <button className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
+              <button type="button" className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
                 Sign in
               </button>
             </>
           )}
           {mode === "forgot" && (
-            <button className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
+            <button type="button" className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
               Back to sign in
             </button>
           )}

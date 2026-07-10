@@ -15,13 +15,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let gotEvent = false;
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      gotEvent = true;
       setSession(s);
       setLoading(false);
     });
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
+      // Don't clobber a session that onAuthStateChange already delivered.
+      if (!gotEvent) {
+        setSession(data.session);
+        setLoading(false);
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, []);
