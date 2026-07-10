@@ -210,7 +210,7 @@ function AuthPage() {
           {mode === "signin" && (
             <>
               New here?{" "}
-              <button className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signup")}>
+              <button type="button" className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signup")}>
                 Create an account
               </button>
             </>
@@ -218,13 +218,13 @@ function AuthPage() {
           {mode === "signup" && (
             <>
               Already have an account?{" "}
-              <button className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
+              <button type="button" className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
                 Sign in
               </button>
             </>
           )}
           {mode === "forgot" && (
-            <button className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
+            <button type="button" className="text-foreground underline-offset-2 hover:underline" onClick={() => setMode("signin")}>
               Back to sign in
             </button>
           )}
