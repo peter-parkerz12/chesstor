@@ -53,6 +53,33 @@ export const BOARD_THEMES: BoardTheme[] = [
     lightText: "#141519",
     darkText: "#EDE7DA",
   },
+  {
+    id: "midnight",
+    name: "Midnight",
+    description: "Deep charcoal and muted slate for late-night focus.",
+    light: "#3C4250",
+    dark: "#0F1319",
+    lightText: "#E6EAF0",
+    darkText: "#8892A3",
+  },
+  {
+    id: "tournament",
+    name: "Tournament Green",
+    description: "Classic tournament green with refined neutral squares.",
+    light: "#EEEED2",
+    dark: "#4B7A3F",
+    lightText: "#4B7A3F",
+    darkText: "#EEEED2",
+  },
+  {
+    id: "graphite",
+    name: "Graphite",
+    description: "Minimal monochrome charcoal — pure focus.",
+    light: "#B8BAC0",
+    dark: "#3A3D44",
+    lightText: "#2A2D33",
+    darkText: "#E6E8EC",
+  },
 ];
 
 export type PieceSet = {
