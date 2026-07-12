@@ -125,12 +125,55 @@ const glassSet = makeRenderer({
   glyph: { white: WHITE, black: SOLID },
 });
 
+/** Neo — bold modern silhouettes with high contrast. */
+const neoSet = makeRenderer({
+  variant: "solid",
+  whiteFill: "#FFFFFF",
+  blackFill: "#1B1D22",
+  whiteStroke: "#1B1D22",
+  blackStroke: "#FFFFFF",
+  strokeWidth: 3.2,
+  fontWeight: 700,
+  fontSize: 82,
+});
+
+/** Minimal — ultra thin hairline outline. */
+const minimalSet = makeRenderer({
+  variant: "outline",
+  whiteFill: "transparent",
+  blackFill: "transparent",
+  whiteStroke: "#F5F1E8",
+  blackStroke: "#0A0A0B",
+  strokeWidth: 2.4,
+  fontWeight: 200,
+  fontSize: 94,
+  glyph: { white: WHITE, black: WHITE },
+});
+
+/** Precision — sharp engineered pieces with mechanical edge. */
+const precisionSet = makeRenderer({
+  variant: "solid",
+  whiteFill: "#E8ECF2",
+  blackFill: "#08090C",
+  whiteStroke: "#3A3F4A",
+  blackStroke: "#3A3F4A",
+  strokeWidth: 1.4,
+  fontWeight: 800,
+  fontSize: 86,
+});
+
 export function getPieceRenderer(id: PieceSetId): PieceRenderObject {
   switch (id) {
     case "modern":
       return modernSet;
     case "glass":
       return glassSet;
+    case "neo":
+      return neoSet;
+    case "minimal":
+      return minimalSet;
+    case "precision":
+      return precisionSet;
     case "staunton":
     default:
       return stauntonSet;
