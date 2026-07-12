@@ -294,27 +294,44 @@ function SettingsRoute() {
               {SOUND_PACKS.map((pack) => {
                 const active = prefs.soundPack === pack.id;
                 return (
-                  <button
+                  <div
                     key={pack.id}
-                    type="button"
-                    onClick={() => {
-                      setPrefs({ soundPack: pack.id });
-                      playSfx("click");
-                    }}
-                    className={`group min-h-[72px] rounded-2xl border px-4 py-3.5 text-left transition-colors ${
+                    className={`group min-h-[72px] rounded-2xl border px-4 py-3.5 transition-colors ${
                       active
                         ? "border-gold/40 bg-gold/10"
                         : "border-white/8 bg-white/3 hover:border-white/15 hover:bg-white/5"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPrefs({ soundPack: pack.id });
+                          playSfx("move", pack.id);
+                        }}
+                        className="min-w-0 flex-1 text-left"
+                      >
                         <p className="truncate text-sm font-semibold">{pack.name}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{pack.description}</p>
+                      </button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          aria-label={`Preview ${pack.name} sound`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playSfx("move", pack.id);
+                            setTimeout(() => playSfx("capture", pack.id), 220);
+                            setTimeout(() => playSfx("check", pack.id), 480);
+                          }}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-muted-foreground hover:text-foreground"
+                        >
+                          <Play className="h-3.5 w-3.5" />
+                        </button>
+                        {active && <Check className="mt-0.5 h-4 w-4 text-gold" />}
                       </div>
-                      {active && <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
