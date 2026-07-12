@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 
-export type BoardThemeId = "walnut" | "slate" | "ivory";
-export type PieceSetId = "staunton" | "modern" | "glass";
+export type BoardThemeId = "walnut" | "slate" | "ivory" | "midnight" | "tournament" | "graphite";
+export type PieceSetId = "staunton" | "modern" | "glass" | "neo" | "minimal" | "precision";
 export type ThemeMode = "light" | "dark";
 export type SoundPackId = "default" | "classic-tournament" | "modern-digital" | "premium-luxury";
+
+export const BOARD_SIZE_MIN = 320;
+export const BOARD_SIZE_MAX = 900;
+export const BOARD_SIZE_DEFAULT = 640;
+
+export function clampBoardSize(value: number): number {
+  if (!Number.isFinite(value)) return BOARD_SIZE_DEFAULT;
+  return Math.min(BOARD_SIZE_MAX, Math.max(BOARD_SIZE_MIN, Math.round(value)));
+}
 
 export type BoardTheme = {
   id: BoardThemeId;
@@ -44,6 +53,33 @@ export const BOARD_THEMES: BoardTheme[] = [
     lightText: "#141519",
     darkText: "#EDE7DA",
   },
+  {
+    id: "midnight",
+    name: "Midnight",
+    description: "Deep charcoal and muted slate for late-night focus.",
+    light: "#3C4250",
+    dark: "#0F1319",
+    lightText: "#E6EAF0",
+    darkText: "#8892A3",
+  },
+  {
+    id: "tournament",
+    name: "Tournament Green",
+    description: "Classic tournament green with refined neutral squares.",
+    light: "#EEEED2",
+    dark: "#4B7A3F",
+    lightText: "#4B7A3F",
+    darkText: "#EEEED2",
+  },
+  {
+    id: "graphite",
+    name: "Graphite",
+    description: "Minimal monochrome charcoal — pure focus.",
+    light: "#B8BAC0",
+    dark: "#3A3D44",
+    lightText: "#2A2D33",
+    darkText: "#E6E8EC",
+  },
 ];
 
 export type PieceSet = {
@@ -68,6 +104,21 @@ export const PIECE_SETS: PieceSet[] = [
     name: "Elite Glass",
     description: "Refined hairline outlines, premium clarity.",
   },
+  {
+    id: "neo",
+    name: "Neo",
+    description: "Bold modern silhouettes with strong contrast.",
+  },
+  {
+    id: "minimal",
+    name: "Minimal",
+    description: "Ultra-thin hairline pieces, maximum clarity.",
+  },
+  {
+    id: "precision",
+    name: "Precision",
+    description: "Sharp engineered pieces with a mechanical edge.",
+  },
 ];
 
 export type Preferences = {
@@ -81,6 +132,7 @@ export type Preferences = {
   moveHints: boolean;
   animations: boolean;
   offlineMode: boolean;
+  boardSize: number; // px, desktop preferred board width
 };
 
 const DEFAULTS: Preferences = {
@@ -94,6 +146,7 @@ const DEFAULTS: Preferences = {
   moveHints: true,
   animations: true,
   offlineMode: true,
+  boardSize: BOARD_SIZE_DEFAULT,
 };
 
 const KEY = "chesscoach:prefs:v1";
@@ -144,6 +197,7 @@ function read(): Preferences {
       soundEnabled:
         typeof saved.soundEnabled === "boolean" ? saved.soundEnabled : DEFAULTS.soundEnabled,
       coachEnabled: saved.coachEnabled ?? saved.aiHints ?? DEFAULTS.coachEnabled,
+      boardSize: clampBoardSize(saved.boardSize ?? DEFAULTS.boardSize),
     };
     if ((preferences.pieceSet as string) === "minimalist") preferences.pieceSet = "glass";
     return preferences;

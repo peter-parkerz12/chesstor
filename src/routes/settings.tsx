@@ -24,6 +24,8 @@ import { ClayCard } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import {
+  BOARD_SIZE_MAX,
+  BOARD_SIZE_MIN,
   BOARD_THEMES,
   PIECE_SETS,
   resetPreferences,
@@ -32,6 +34,7 @@ import {
 } from "@/lib/settings/preferences";
 import { playSfx } from "@/lib/audio/sfx";
 import { PieceSetPreview } from "@/lib/chess/pieceSets";
+import { Play, Ruler } from "lucide-react";
 
 const SOUND_PACKS: Array<{ id: SoundPackId; name: string; description: string }> = [
   { id: "default", name: "Default", description: "Balanced acoustic tones." },
@@ -163,6 +166,29 @@ function SettingsRoute() {
               })}
             </CardGrid>
           </Group>
+
+          <Row
+            icon={Ruler}
+            title="Board size"
+            description="Preferred board width on desktop. Automatically clamps to the available space."
+            control={
+              <div className="flex w-full max-w-[220px] items-center gap-3">
+                <input
+                  type="range"
+                  min={BOARD_SIZE_MIN}
+                  max={BOARD_SIZE_MAX}
+                  step={10}
+                  value={prefs.boardSize}
+                  onChange={(e) => setPrefs({ boardSize: Number(e.target.value) })}
+                  className="h-1.5 flex-1 cursor-pointer accent-gold"
+                  aria-label="Board size"
+                />
+                <span className="w-14 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                  {prefs.boardSize}px
+                </span>
+              </div>
+            }
+          />
         </Section>
 
         {/* ──────────────── GAMEPLAY ──────────────── */}
@@ -268,27 +294,44 @@ function SettingsRoute() {
               {SOUND_PACKS.map((pack) => {
                 const active = prefs.soundPack === pack.id;
                 return (
-                  <button
+                  <div
                     key={pack.id}
-                    type="button"
-                    onClick={() => {
-                      setPrefs({ soundPack: pack.id });
-                      playSfx("click");
-                    }}
-                    className={`group min-h-[72px] rounded-2xl border px-4 py-3.5 text-left transition-colors ${
+                    className={`group min-h-[72px] rounded-2xl border px-4 py-3.5 transition-colors ${
                       active
                         ? "border-gold/40 bg-gold/10"
                         : "border-white/8 bg-white/3 hover:border-white/15 hover:bg-white/5"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPrefs({ soundPack: pack.id });
+                          playSfx("move", pack.id);
+                        }}
+                        className="min-w-0 flex-1 text-left"
+                      >
                         <p className="truncate text-sm font-semibold">{pack.name}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{pack.description}</p>
+                      </button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          aria-label={`Preview ${pack.name} sound`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playSfx("move", pack.id);
+                            setTimeout(() => playSfx("capture", pack.id), 220);
+                            setTimeout(() => playSfx("check", pack.id), 480);
+                          }}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-muted-foreground hover:text-foreground"
+                        >
+                          <Play className="h-3.5 w-3.5" />
+                        </button>
+                        {active && <Check className="mt-0.5 h-4 w-4 text-gold" />}
                       </div>
-                      {active && <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -448,7 +491,7 @@ function Group({
 }
 
 function CardGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">{children}</div>;
+  return <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{children}</div>;
 }
 
 function ThemeTile({
