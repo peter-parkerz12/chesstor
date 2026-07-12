@@ -166,6 +166,29 @@ function SettingsRoute() {
               })}
             </CardGrid>
           </Group>
+
+          <Row
+            icon={Ruler}
+            title="Board size"
+            description="Preferred board width on desktop. Automatically clamps to the available space."
+            control={
+              <div className="flex w-full max-w-[220px] items-center gap-3">
+                <input
+                  type="range"
+                  min={BOARD_SIZE_MIN}
+                  max={BOARD_SIZE_MAX}
+                  step={10}
+                  value={prefs.boardSize}
+                  onChange={(e) => setPrefs({ boardSize: Number(e.target.value) })}
+                  className="h-1.5 flex-1 cursor-pointer accent-gold"
+                  aria-label="Board size"
+                />
+                <span className="w-14 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                  {prefs.boardSize}px
+                </span>
+              </div>
+            }
+          />
         </Section>
 
         {/* ──────────────── GAMEPLAY ──────────────── */}
