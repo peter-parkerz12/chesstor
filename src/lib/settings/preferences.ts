@@ -197,6 +197,7 @@ function read(): Preferences {
       soundEnabled:
         typeof saved.soundEnabled === "boolean" ? saved.soundEnabled : DEFAULTS.soundEnabled,
       coachEnabled: saved.coachEnabled ?? saved.aiHints ?? DEFAULTS.coachEnabled,
+      boardSize: clampBoardSize(saved.boardSize ?? DEFAULTS.boardSize),
     };
     if ((preferences.pieceSet as string) === "minimalist") preferences.pieceSet = "glass";
     return preferences;
