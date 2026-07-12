@@ -104,6 +104,21 @@ export const PIECE_SETS: PieceSet[] = [
     name: "Elite Glass",
     description: "Refined hairline outlines, premium clarity.",
   },
+  {
+    id: "neo",
+    name: "Neo",
+    description: "Bold modern silhouettes with strong contrast.",
+  },
+  {
+    id: "minimal",
+    name: "Minimal",
+    description: "Ultra-thin hairline pieces, maximum clarity.",
+  },
+  {
+    id: "precision",
+    name: "Precision",
+    description: "Sharp engineered pieces with a mechanical edge.",
+  },
 ];
 
 export type Preferences = {
@@ -117,6 +132,7 @@ export type Preferences = {
   moveHints: boolean;
   animations: boolean;
   offlineMode: boolean;
+  boardSize: number; // px, desktop preferred board width
 };
 
 const DEFAULTS: Preferences = {
@@ -130,6 +146,7 @@ const DEFAULTS: Preferences = {
   moveHints: true,
   animations: true,
   offlineMode: true,
+  boardSize: BOARD_SIZE_DEFAULT,
 };
 
 const KEY = "chesscoach:prefs:v1";
