@@ -24,6 +24,8 @@ import { ClayCard } from "@/components/ui/surfaces";
 import { Button } from "@/components/ui/button";
 import { InstallButton } from "@/components/pwa/InstallButton";
 import {
+  BOARD_SIZE_MAX,
+  BOARD_SIZE_MIN,
   BOARD_THEMES,
   PIECE_SETS,
   resetPreferences,
@@ -32,6 +34,7 @@ import {
 } from "@/lib/settings/preferences";
 import { playSfx } from "@/lib/audio/sfx";
 import { PieceSetPreview } from "@/lib/chess/pieceSets";
+import { Play, Ruler } from "lucide-react";
 
 const SOUND_PACKS: Array<{ id: SoundPackId; name: string; description: string }> = [
   { id: "default", name: "Default", description: "Balanced acoustic tones." },
