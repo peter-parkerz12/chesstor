@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 
-export type BoardThemeId = "walnut" | "slate" | "ivory";
-export type PieceSetId = "staunton" | "modern" | "glass";
+export type BoardThemeId = "walnut" | "slate" | "ivory" | "midnight" | "tournament" | "graphite";
+export type PieceSetId = "staunton" | "modern" | "glass" | "neo" | "minimal" | "precision";
 export type ThemeMode = "light" | "dark";
 export type SoundPackId = "default" | "classic-tournament" | "modern-digital" | "premium-luxury";
+
+export const BOARD_SIZE_MIN = 320;
+export const BOARD_SIZE_MAX = 900;
+export const BOARD_SIZE_DEFAULT = 640;
+
+export function clampBoardSize(value: number): number {
+  if (!Number.isFinite(value)) return BOARD_SIZE_DEFAULT;
+  return Math.min(BOARD_SIZE_MAX, Math.max(BOARD_SIZE_MIN, Math.round(value)));
+}
 
 export type BoardTheme = {
   id: BoardThemeId;
